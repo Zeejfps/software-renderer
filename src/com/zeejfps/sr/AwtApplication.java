@@ -1,13 +1,10 @@
-package com.zeejfps.sr.impl;
-
-import com.zeejfps.sr.Application;
-import com.zeejfps.sr.ApplicationListener;
-import com.zeejfps.sr.Rasterizer;
+package com.zeejfps.sr;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 
 public class AwtApplication extends Application {
 
@@ -28,23 +25,25 @@ public class AwtApplication extends Application {
         canvas = new Canvas();
         canvas.setPreferredSize(new Dimension(width, height));
         canvas.setBackground(Color.BLACK);
+        canvas.setForeground(Color.BLACK);
         canvas.setFocusable(true);
 
         // Create the frame to hold the canvas
         frame = new JFrame();
+        frame.setUndecorated(true);
+        frame.getContentPane().setBackground(Color.BLACK);
         frame.getContentPane().add(canvas);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setResizable(false);
         frame.pack();
         frame.setLocationRelativeTo(null);
-        //frame.setUndecorated(true);
-        //device.setFullScreenWindow(frame);
+        device.setFullScreenWindow(frame);
 
         // Create our colorBuffer bitmap
         this.img = new BufferedImage(resolutionX, resolutionY, BufferedImage.TYPE_INT_RGB);
         this.colorBuffer = Bitmap.attach(img, true);
 
-        rasterizer = new BitmapRasterizer(this.colorBuffer);
+        rasterizer = new SimpleRasterizer(this.colorBuffer);
     }
 
     @Override
@@ -54,7 +53,13 @@ public class AwtApplication extends Application {
     }
 
     @Override
+    public Rasterizer getRasterizer() {
+        return rasterizer;
+    }
+
+    @Override
     protected void update() {
+        Arrays.fill(colorBuffer.pixels, 0x002233);
         super.update();
         if (bs == null) {
             canvas.createBufferStrategy(2);
@@ -62,15 +67,13 @@ public class AwtApplication extends Application {
         }
 
         Graphics2D g = (Graphics2D)bs.getDrawGraphics();
-        g.drawImage(img, 0, 0, canvas.getWidth(), canvas.getHeight(), null);
+        float aspect = img.getWidth() / (float)img.getHeight();
+        int w = (int)(canvas.getHeight() * aspect);
+        int h = canvas.getHeight();
+        g.drawImage(img, (int)((canvas.getWidth() -w) * 0.5f), 0, w, h, null);
         Toolkit.getDefaultToolkit().sync();
         g.dispose();
         bs.show();
-    }
-
-    @Override
-    public Rasterizer getRasterizer() {
-        return rasterizer;
     }
 
 }

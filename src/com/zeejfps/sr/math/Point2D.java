@@ -1,23 +1,23 @@
 package com.zeejfps.sr.math;
 
-public class Vec2i {
+public class Point2D {
 
     public int x, y;
 
-    public Vec2i() {
+    public Point2D() {
         this(0, 0);
     }
 
-    public Vec2i(int x, int y) {
+    public Point2D(int x, int y) {
         this.x = x;
         this.y = y;
     }
 
-    public Vec2i(Vec2i copy) {
+    public Point2D(Point2D copy) {
         this(copy.x, copy.y);
     }
 
-    public void set(Vec2i v) {
+    public void set(Point2D v) {
         this.x = v.x;
         this.y = v.y;
     }
@@ -29,7 +29,7 @@ public class Vec2i {
 
     @Override
     public String toString() {
-        return "Vec2i[" + x + ", " + y + "]";
+        return "Point2D[" + x + ", " + y + "]";
     }
 
 }

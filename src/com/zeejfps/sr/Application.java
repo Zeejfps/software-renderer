@@ -45,11 +45,11 @@ public abstract class Application {
         lag += elapsed;
 
         while (lag >= NS_PER_UPDATE && skippedFrames < MAX_FRAMES_SKIP) {
-            appListener.fixedUpdate();
+            appListener.update();
             lag -= NS_PER_UPDATE;
             skippedFrames++;
         }
         skippedFrames = 0;
-        appListener.update(elapsed);
+        appListener.render();
     }
 }

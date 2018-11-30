@@ -1,4 +1,4 @@
-package com.zeejfps.sr.impl;
+package com.zeejfps.sr;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;

@@ -1,15 +1,13 @@
 package com.zeejfps.sr;
 
-import com.zeejfps.sr.impl.AwtApplication;
-
 public class SoftwareRenderer implements ApplicationListener {
 
     private Application application;
-    private Rasterizer rasterizer;
+    private Rasterizer renderer;
 
     public SoftwareRenderer() {
         application = new AwtApplication(1280, 720, 1280, 720);
-        rasterizer = application.getRasterizer();
+        renderer = application.getRasterizer();
     }
 
     @Override
@@ -19,22 +17,45 @@ public class SoftwareRenderer implements ApplicationListener {
 
     int fps = 0;
     double startTime = 0;
-    @Override
-    public void update(double dt) {
-        //rasterizer.drawLine(0.2f, 0.25f, 0.5f, 0.25f,0xff00ff);
-
-    }
 
     @Override
-    public void fixedUpdate() {
-        rasterizer.clearColorBuffer(0xfff200);
-        rasterizer.drawTriangle(0.5f, 0.1f, 0.3f, 0.9f, 0.8f, 0.56f, 0xff00ff);
+    public void render() {
+        renderer.fillTriangle(
+                0.5f, 0.1f, 0xff0000,
+                0.8f, 0.5f, 0x00ff00,
+                0.2f, 0.9f, 0x0000ff
+        );
+
+        renderer.fillTriangle(
+                0f, -0.5f, 0xff00ff,
+                0.5f, 0.5f, 0xff00ff,
+                -0.3f, 0.7f, 0xff00ff
+        );
+
+        renderer.fillTriangle(
+                -0.5f, -0.8f, 0xf430ff,
+                0.1f, 0.3f, 0xff055f,
+                -0.9f, 0.2f, 0xf230ff
+        );
+
+        renderer.fillTriangle(
+                -0.2f, -0.1f, 0xff00ff,
+                0.23f, 1.2f, 0xff00ff,
+                -0.2f, 0.9f, 0x3300ff
+        );
+
+
         fps++;
         if (System.currentTimeMillis() - startTime >= 1000) {
             System.out.println("FPS: " + fps);
             fps = 0;
             startTime = System.currentTimeMillis();
         }
+    }
+
+    @Override
+    public void update() {
+
     }
 
     public void run() {
