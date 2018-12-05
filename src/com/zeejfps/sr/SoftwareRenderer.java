@@ -64,15 +64,6 @@ public class SoftwareRenderer implements ApplicationListener {
 
     public static void main(String[] args) {
         new SoftwareRenderer().run();
-
-
-
-        int[] pixel = new int[1024 * 1024];
-        pixel[1337] = 0xAAFFBBAA;
-
-
-        int i = pixel[0];
-
     }
 
 }
