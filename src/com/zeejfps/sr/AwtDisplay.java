@@ -12,8 +12,8 @@ public class AwtDisplay {
 
     private JFrame frame;
     private Canvas canvas;
-    private BufferedImage buffer;
-    private BufferStrategy bs;
+    private BufferedImage frameBuffer;
+    private BufferStrategy bufferStrategy;
 
     private int width;
     private int height;
@@ -23,7 +23,6 @@ public class AwtDisplay {
         // Create the canvas we are going to draw on
         canvas = new Canvas();
         canvas.setBackground(Color.BLACK);
-        canvas.setForeground(Color.BLACK);
         canvas.setFocusable(true);
 
         // Create the frame to hold the canvas
@@ -52,7 +51,7 @@ public class AwtDisplay {
         frame.pack();
         frame.setLocationRelativeTo(null);
 
-        this.buffer = new BufferedImage(resolutionX, resolutionY, BufferedImage.TYPE_INT_RGB);
+        this.frameBuffer = new BufferedImage(resolutionX, resolutionY, BufferedImage.TYPE_INT_RGB);
     }
 
     public void show() {
@@ -60,20 +59,20 @@ public class AwtDisplay {
     }
 
     public void swapBuffers() {
-        if (bs == null) {
+        if (bufferStrategy == null) {
             canvas.createBufferStrategy(2);
-            bs = canvas.getBufferStrategy();
+            bufferStrategy = canvas.getBufferStrategy();
         }
 
-        Graphics2D g = (Graphics2D)bs.getDrawGraphics();
-        g.drawImage(buffer, 0, 0, canvas.getWidth(), canvas.getHeight(), null);
+        Graphics2D g = (Graphics2D) bufferStrategy.getDrawGraphics();
+        g.drawImage(frameBuffer, 0, 0, canvas.getWidth(), canvas.getHeight(), null);
         g.dispose();
         Toolkit.getDefaultToolkit().sync();
-        bs.show();
+        bufferStrategy.show();
     }
 
-    public BufferedImage getBuffer() {
-        return buffer;
+    public BufferedImage getFrameBuffer() {
+        return frameBuffer;
     }
 
     public int getWidth() {

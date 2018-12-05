@@ -4,24 +4,30 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector4f;
 
-public class SoftwareRenderer extends AwtApplication {
+import java.util.Arrays;
 
+public class SoftwareRenderer extends Application {
+
+    private final AwtDisplay display;
     private final Rasterizer rasterizer;
     private final Camera camera;
 
+    private final Bitmap colorBuffer;
+
     public SoftwareRenderer() {
+        Config config = new Config();
+        config.fullscreen = true;
+        config.renderScale = 0.25f;
+        display = new AwtDisplay(config);
+        this.colorBuffer = Bitmap.attach(display.getFrameBuffer(), true);
+
         rasterizer = new SimpleRasterizer(this.colorBuffer);
         camera = new Camera(65f, (float)display.getWidth() / display.getHeight(), 0.01f, 100f);
     }
 
     @Override
-    protected void setup(Config config) {
-        config.fullscreen = true;
-        config.renderScale = 0.25f;
-    }
-
-    @Override
     protected void init() {
+        display.show();
         startTime = System.currentTimeMillis();
     }
 
@@ -37,6 +43,7 @@ public class SoftwareRenderer extends AwtApplication {
     @Override
     public void render() {
 
+        Arrays.fill(colorBuffer.pixels, 0x002233);
         renderTriangle(vertices[0], vertices[1], vertices[2]);
 
         /*rasterizer.fillTriangle(
@@ -69,6 +76,8 @@ public class SoftwareRenderer extends AwtApplication {
             fps = 0;
             startTime = System.currentTimeMillis();
         }
+
+        display.swapBuffers();
     }
 
     @Override
