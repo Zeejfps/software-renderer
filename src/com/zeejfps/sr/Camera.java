@@ -1,11 +1,11 @@
 package com.zeejfps.sr;
 
-import com.zeejfps.sr.math.Vec3f;
+import org.joml.Vector3f;
 
 public class Camera {
 
-    public Vec3f worldToViewportCoord(Vec3f point) {
-        return new Vec3f();
+    public Vector3f worldToViewportCoord(Vector3f point) {
+        return new Vector3f();
     }
 
 }

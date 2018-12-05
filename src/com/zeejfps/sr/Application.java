@@ -7,12 +7,10 @@ public abstract class Application {
     private static final int MAX_FRAMES_SKIP = 5;
 
     private boolean running;
-    private ApplicationListener appListener;
 
-    public void launch(ApplicationListener appListener) {
+    public void launch() {
         if (running) return;
 
-        this.appListener = appListener;
         new Thread(() -> {
             running = true;
             loop();
@@ -29,15 +27,13 @@ public abstract class Application {
     private void loop() {
         previous = System.nanoTime();
 
-        appListener.init();
+        init();
         while(running) {
-            update();
+            this.tick();
         }
     }
 
-    public abstract Rasterizer getRasterizer();
-
-    protected void update() {
+    protected void tick() {
         current = System.nanoTime();
         elapsed = current - previous;
 
@@ -45,11 +41,17 @@ public abstract class Application {
         lag += elapsed;
 
         while (lag >= NS_PER_UPDATE && skippedFrames < MAX_FRAMES_SKIP) {
-            appListener.update();
+            update();
             lag -= NS_PER_UPDATE;
             skippedFrames++;
         }
         skippedFrames = 0;
-        appListener.render();
+        render();
     }
+
+    protected abstract void init();
+
+    protected abstract void update();
+
+    protected abstract void render();
 }

@@ -6,24 +6,28 @@ import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 
-public class AwtApplication extends Application {
+public abstract class AwtApplication extends Application {
 
     private static GraphicsDevice device = GraphicsEnvironment
             .getLocalGraphicsEnvironment().getScreenDevices()[0];
 
-    public final Bitmap colorBuffer;
-
-    private final JFrame frame;
-    private final Canvas canvas;
-    private final BufferedImage img;
+    private JFrame frame;
+    private Canvas canvas;
+    private BufferedImage img;
     private BufferStrategy bs;
 
+    private Config config;
+
+    public final Bitmap colorBuffer;
     public final Rasterizer rasterizer;
 
-    public AwtApplication(int width, int height, int resolutionX, int resolutionY) {
+    public AwtApplication() {
+        config = new Config();
+        this.setup(config);
+
         // Create the canvas we are going to draw on
         canvas = new Canvas();
-        canvas.setPreferredSize(new Dimension(width, height));
+        canvas.setPreferredSize(new Dimension(config.windowWidth, config.windowHeight));
         canvas.setBackground(Color.BLACK);
         canvas.setForeground(Color.BLACK);
         canvas.setFocusable(true);
@@ -40,6 +44,8 @@ public class AwtApplication extends Application {
         device.setFullScreenWindow(frame);
 
         // Create our colorBuffer bitmap
+        int resolutionX = (int)(config.windowWidth * config.renderScale + 0.5f);
+        int resolutionY = (int)(config.windowHeight * config.renderScale + 0.5f);
         this.img = new BufferedImage(resolutionX, resolutionY, BufferedImage.TYPE_INT_RGB);
         this.colorBuffer = Bitmap.attach(img, true);
 
@@ -47,20 +53,17 @@ public class AwtApplication extends Application {
     }
 
     @Override
-    public void launch(ApplicationListener listener) {
+    public void launch() {
         frame.setVisible(true);
-        super.launch(listener);
+        super.launch();
     }
 
     @Override
-    public Rasterizer getRasterizer() {
-        return rasterizer;
-    }
-
-    @Override
-    protected void update() {
+    protected void tick() {
         Arrays.fill(colorBuffer.pixels, 0x002233);
-        super.update();
+
+        super.tick();
+
         if (bs == null) {
             canvas.createBufferStrategy(2);
             bs = canvas.getBufferStrategy();
@@ -75,5 +78,7 @@ public class AwtApplication extends Application {
         g.dispose();
         bs.show();
     }
+
+    protected abstract void setup(Config config);
 
 }

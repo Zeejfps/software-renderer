@@ -1,8 +1,6 @@
 package com.zeejfps.sr;
 
-import com.zeejfps.sr.Bitmap;
-import com.zeejfps.sr.Rasterizer;
-import com.zeejfps.sr.math.Point2D;
+import org.joml.Vector2i;
 
 public class SimpleRasterizer implements Rasterizer {
 
@@ -12,8 +10,8 @@ public class SimpleRasterizer implements Rasterizer {
         this.colorBuffer = colorBuffer;
     }
 
-    private Point2D viewportToRasterCoord(float x, float y) {
-        Point2D result = new Point2D();
+    private Vector2i viewportToRasterCoord(float x, float y) {
+        Vector2i result = new Vector2i();
 
         float halfWidth = colorBuffer.width * 0.5f;
         float halfHeight = colorBuffer.height * 0.5f;
@@ -31,9 +29,9 @@ public class SimpleRasterizer implements Rasterizer {
     )
     {
 
-        Point2D v0 = viewportToRasterCoord(x0, y0);
-        Point2D v1 = viewportToRasterCoord(x1, y1);
-        Point2D v2 = viewportToRasterCoord(x2, y2);
+        Vector2i v0 = viewportToRasterCoord(x0, y0);
+        Vector2i v1 = viewportToRasterCoord(x1, y1);
+        Vector2i v2 = viewportToRasterCoord(x2, y2);
 
         // Compute triangle bounding box
         int minX = min3(v0.x, v1.x, v2.x);
@@ -53,7 +51,7 @@ public class SimpleRasterizer implements Rasterizer {
         int A20 = v2.y - v0.y, B20 = v0.x - v2.x;
 
         // Barycentric coordinates at minX/minY corner
-        Point2D p = new Point2D(minX, minY);
+        Vector2i p = new Vector2i(minX, minY);
         int w0_row = edge(v1, v2, p);
         int w1_row = edge(v2, v0, p);
         int w2_row = edge(v0, v1, p);
@@ -110,7 +108,7 @@ public class SimpleRasterizer implements Rasterizer {
         return Math.min(a, Math.min(b, c));
     }
 
-    private int edge(Point2D a, Point2D b, Point2D c) {
+    private int edge(Vector2i a, Vector2i b, Vector2i c) {
         return (b.x-a.x)*(c.y-a.y) - (b.y-a.y)*(c.x-a.x);
     }
 
