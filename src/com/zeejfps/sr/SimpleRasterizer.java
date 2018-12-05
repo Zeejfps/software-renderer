@@ -16,8 +16,8 @@ public class SimpleRasterizer implements Rasterizer {
         float halfWidth = colorBuffer.width * 0.5f;
         float halfHeight = colorBuffer.height * 0.5f;
 
-        result.x = (int)(halfWidth + halfWidth * x);
-        result.y = (int)(halfHeight + halfHeight * y);
+        result.x = (int)(halfWidth + halfWidth * x + 0.5f);
+        result.y = (int)(halfHeight + halfHeight * y + 0.5f);
         return result;
     }
 
@@ -57,6 +57,8 @@ public class SimpleRasterizer implements Rasterizer {
         int w2_row = edge(v0, v1, p);
 
         float area = edge(v0, v1, v2); // area of the triangle multiplied by 2
+        if (area == 0)
+            return;
 
         // Rasterize
         for (p.y = minY; p.y <= maxY; p.y++) {
@@ -81,9 +83,9 @@ public class SimpleRasterizer implements Rasterizer {
 
                     int r = (int)(wr * ((c0 & 0xff0000) >> 16) + wg * ((c1 & 0xff0000) >> 16) + wb * ((c2 & 0xff0000) >> 16));
                     int g = (int)(wr * ((c0 & 0x00ff00) >>  8) + wg * ((c1 & 0x00ff00) >>  8) + wb * ((c2 & 0x00ff00) >>  8));
-                    int b = (int)(wr * ((c0 & 0x0000ff) >>  0) + wg * ((c1 & 0x0000ff) >>  0) + wb * ((c2 & 0x0000ff) >>  0));
+                    int b = (int)(wr * ((c0 & 0x0000ff)) + wg * ((c1 & 0x0000ff)) + wb * ((c2 & 0x0000ff)));
                     int color = (r << 16) | (g << 8) | b;
-                    renderPixel(index, color);
+                    renderPixel(p.x + p.y * colorBuffer.width, color);
                 }
 
                 // One step to the right
