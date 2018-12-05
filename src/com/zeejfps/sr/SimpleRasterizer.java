@@ -21,6 +21,10 @@ public class SimpleRasterizer implements Rasterizer {
         return result;
     }
 
+
+    /*
+     * A lot of drawing code comes from this article https://fgiesen.wordpress.com/2013/02/06/the-barycentric-conspirac/
+     */
     @Override
     public void fillTriangle(
         float x0, float y0, int c0,

@@ -140,7 +140,6 @@ public class SoftwareRenderer extends Application {
             Vector3f v1 = mesh.getVertices()[indecies[i+1]];
             Vector3f v2 = mesh.getVertices()[indecies[i+2]];
 
-
             Matrix3f r = new Matrix3f().rotationXYZ(rotation, rotation, rotation);
             Vector3f p0 = v0.mul(r, new Vector3f()).mulProject(camera.getViewProjMatrix());
             Vector3f p1 = v1.mul(r, new Vector3f()).mulProject(camera.getViewProjMatrix());
