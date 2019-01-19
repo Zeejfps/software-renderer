@@ -21,7 +21,7 @@ public class SoftwareRenderer extends Application {
         config.fullscreen = false;
         config.renderScale = 0.9f;
 
-        raster = new Raster3D(320, 240);
+        raster = new Raster3D(640, 480);
 
         display = new AwtDisplay(config, raster);
 

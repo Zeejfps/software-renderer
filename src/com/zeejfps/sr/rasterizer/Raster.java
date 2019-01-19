@@ -113,7 +113,7 @@ public class Raster {
 
     public void drawLine(int startX, int startY, int endX, int endY, int color) {
         if (startX == endX){
-            drawVerticalLine(startX, startY, endY - endX, color);
+            drawVerticalLine(startX, startY, endY - startY, color);
         }
         else if (startY == endY) {
             drawHorizontalLine(startX, startY, endX - startX, color);
