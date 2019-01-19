@@ -2,8 +2,7 @@ package com.zeejfps.sr;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferStrategy;
-import java.awt.image.BufferedImage;
+import java.awt.image.*;
 
 public class AwtDisplay {
 
@@ -11,25 +10,20 @@ public class AwtDisplay {
             .getLocalGraphicsEnvironment().getScreenDevices()[0];
 
     private JFrame frame;
-    private Canvas canvas;
     private BufferedImage frameBuffer;
-    private BufferStrategy bufferStrategy;
-    private JPanel jPanel;
+    private JPanel drawingComponent;
 
     private int width;
     private int height;
 
     public AwtDisplay(Config config) {
 
-        // Create the canvas we are going to draw on
-        canvas = new Canvas();
-        canvas.setBackground(Color.BLACK);
-        canvas.setFocusable(true);
-
         // Create the frame to hold the canvas
         frame = new JFrame();
 
-        jPanel = new JPanel();
+        drawingComponent = new JPanel();
+        drawingComponent.setFocusable(true);
+        drawingComponent.setBackground(Color.BLACK);
 
         int resolutionX, resolutionY;
         if (config.fullscreen) {
@@ -46,18 +40,20 @@ public class AwtDisplay {
             resolutionX = (int)(config.windowWidth * config.renderScale + 0.5f);
             resolutionY = (int)(config.windowHeight * config.renderScale + 0.5f);
         }
-        //canvas.setPreferredSize(new Dimension(this.width, this.height));
-        jPanel.setPreferredSize(new Dimension(this.width, this.height));
+        drawingComponent.setPreferredSize(new Dimension(this.width, this.height));
 
-        //frame.getContentPane().setBackground(Color.BLACK);
-        //frame.getContentPane().add(canvas);
-        frame.setContentPane(jPanel);
+        frame.setContentPane(drawingComponent);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setResizable(false);
         frame.pack();
         frame.setLocationRelativeTo(null);
 
         this.frameBuffer = new BufferedImage(resolutionX, resolutionY, BufferedImage.TYPE_INT_RGB);
+        /*pixels = new int[resolutionX * resolutionY + 1];
+        DataBufferInt dataBuffer = new DataBufferInt(pixels, pixels.length);
+        DirectColorModel colorModel = new DirectColorModel(32, 0xFF0000, 0xFF00, 0xFF);
+        WritableRaster raster = Raster.createWritableRaster(colorModel.createCompatibleSampleModel(resolutionX, resolutionY), dataBuffer, null);
+        this.frameBuffer = new BufferedImage(colorModel, raster, false, new Hashtable<>());*/
     }
 
     public void show() {
@@ -65,18 +61,8 @@ public class AwtDisplay {
     }
 
     public void swapBuffers() {
-        /*if (bufferStrategy == null) {
-            canvas.createBufferStrategy(2);
-            bufferStrategy = canvas.getBufferStrategy();
-        }
-
-        Graphics2D g = (Graphics2D) bufferStrategy.getDrawGraphics();
-        g.drawImage(frameBuffer, 0, 0, canvas.getWidth(), canvas.getHeight(), null);
-        g.dispose();
-        Toolkit.getDefaultToolkit().sync();
-        bufferStrategy.show();*/
-        Graphics g = jPanel.getGraphics();
-        g.drawImage(frameBuffer, 0, 0, jPanel.getWidth(), jPanel.getHeight(), null);
+        Graphics g = drawingComponent.getGraphics();
+        g.drawImage(frameBuffer, 0, 0, drawingComponent.getWidth(), drawingComponent.getHeight(), null);
     }
 
     public BufferedImage getFrameBuffer() {

@@ -37,6 +37,11 @@ public class Rasterizer3D extends Rasterizer {
      */
     public void fillTriangle(int x0, int y0, int c0, int x1, int y1, int c1, int x2, int y2, int c2)
     {
+        // area of the triangle multiplied by 2
+        float area = edge(x0, y0, x1, y1, x2, y2);
+        if (area == 0)
+            return;
+
         // Compute triangle bounding box
         int minX = ZMath.min3(x0, x1, x2);
         int minY = ZMath.min3(y0, y1, y2);
@@ -59,11 +64,6 @@ public class Rasterizer3D extends Rasterizer {
         int w1_row = edge(x2, y2, x0, y0, minX, minY);
         int w2_row = edge(x0, y0, x1, y1, minX, minY);
 
-        // area of the triangle multiplied by 2
-        float area = edge(x0, y0, x1, y1, x2, y2);
-        if (area == 0)
-            return;
-
         // Rasterize
         for (int i = minY; i <= maxY; i++) {
 
@@ -76,7 +76,6 @@ public class Rasterizer3D extends Rasterizer {
             int w2 = w2_row;
 
             for (int j = minX; j <= maxX; j++, index++) {
-                // Determine barycentric coordinates
 
                 // If p is on or inside all edges, render pixel.
                 if ((w0 | w1 | w2) >= 0) {
