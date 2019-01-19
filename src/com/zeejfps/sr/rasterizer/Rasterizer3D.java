@@ -3,10 +3,16 @@ package com.zeejfps.sr.rasterizer;
 import com.zeejfps.sr.ZMath;
 import org.joml.Vector2i;
 
+import java.util.Arrays;
+
 public class Rasterizer3D extends Rasterizer {
+
+    protected float[] depthBuffer;
 
     public Rasterizer3D(Bitmap raster) {
         super(raster);
+        depthBuffer = new float[raster.width * raster.height];
+        Arrays.fill(depthBuffer, Float.MAX_VALUE);
     }
 
     public Vector2i viewportToRasterCoord(float x, float y) {
@@ -20,7 +26,13 @@ public class Rasterizer3D extends Rasterizer {
         return result;
     }
 
-    public void fillTriangle(
+    public void drawTri(int x0, int y0, int x1, int y1, int x2, int y2, int color) {
+        drawLine(x0, y0, x1, y1, color);
+        drawLine(x1, y1, x2, y2, color);
+        drawLine(x2, y2, x0, y0, color);
+    }
+
+    public void fillTri(
         float x0, float y0, int c0,
         float x1, float y1, int c1,
         float x2, float y2, int c2
@@ -29,13 +41,13 @@ public class Rasterizer3D extends Rasterizer {
         Vector2i v1 = viewportToRasterCoord(x1, y1);
         Vector2i v2 = viewportToRasterCoord(x2, y2);
 
-        fillTriangle(v0.x, v0.y, c0, v1.x, v1.y, c1, v2.x, v2.y, c2);
+        fillTriangleFast(v0.x, v0.y, c0, v1.x, v1.y, c1, v2.x, v2.y, c2);
     }
 
     /*
      * A lot of drawing code comes of this article https://fgiesen.wordpress.com/2013/02/06/the-barycentric-conspirac/
      */
-    public void fillTriangle(int x0, int y0, int c0, int x1, int y1, int c1, int x2, int y2, int c2)
+    public void fillTriangleFast(int x0, int y0, int c0, int x1, int y1, int c1, int x2, int y2, int c2)
     {
         // area of the triangle multiplied by 2
         float area = edge(x0, y0, x1, y1, x2, y2);

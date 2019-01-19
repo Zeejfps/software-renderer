@@ -5,7 +5,6 @@ import com.zeejfps.sr.rasterizer.Rasterizer3D;
 import com.zeejfps.sr.utils.OBJImporter;
 import org.joml.*;
 
-import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.io.IOException;
@@ -65,37 +64,41 @@ public class SoftwareRenderer extends Application {
 
         //rasterizer.fillRect(100, 25, 400, 320, 0xff0000);
 
-        rasterizer.drawRect(4, 4, 22, 22, 0xffff00);
+        //rasterizer.drawRect(4, 4, 22, 22, 0xffff00);
 
         //rasterizer.drawHorizontalLine(-15, 25, 10, 0xff0000);
 
-        rasterizer.fillRect(5, 5, 20, 20, 0xff00ff);
+        //rasterizer.fillRect(5, 5, 20, 20, 0xff00ff);
 
-        rasterizer.drawLine(40, 40, 41, 65, 0xff2233);
+        //rasterizer.drawLine(40, 40, 41, 65, 0xff2233);
 
         //rasterizer.drawLine(15, 10, 15, 40, 0xffff00);
 
         //rasterizer.drawLine(25, 25, 180, 240, 0xffff00);
 
-        /*rasterizer.fillTriangle(
+        rasterizer.drawTri(10, 10, 50, 30, 15, 20, 0xff2244);
+
+        rasterizer.drawLine(20, 20, 5, 5, 0xff00ff);
+
+        /*rasterizer.fillTriangleFast(
                 0.5f, 0.1f, 0xff0000,
                 0.8f, 0.5f, 0x00ff00,
                 0.2f, 0.9f, 0x0000ff
         );
 
-        rasterizer.fillTriangle(
+        rasterizer.fillTriangleFast(
                 0f, -0.5f, 0xff00ff,
                 0.5f, 0.5f, 0xff00ff,
                 -0.3f, 0.7f, 0xff00ff
         );
 
-        rasterizer.fillTriangle(
+        rasterizer.fillTriangleFast(
                 -0.5f, -0.8f, 0xf430ff,
                 0.1f, 0.3f, 0xff055f,
                 -0.9f, 0.2f, 0xf230ff
         );*/
 
-        rasterizer.fillTriangle(
+        rasterizer.fillTri(
                 -0.2f, -0.1f, 0xff00ff,
                 0.23f, 1.2f, 0xff00ff,
                 -0.2f, 0.9f, 0x3300ff
@@ -131,7 +134,7 @@ public class SoftwareRenderer extends Application {
         Vector4f p1 = v1.position.mul(new Matrix4f().rotateY(rotation), new Vector4f()).mulProject(camera.getViewProjMatrix(), new Vector4f());
         Vector4f p2 = v2.position.mul(new Matrix4f().rotateY(rotation), new Vector4f()).mulProject(camera.getViewProjMatrix(), new Vector4f());
 
-        rasterizer.fillTriangle(
+        rasterizer.fillTri(
                 p0.x, p0.y, v0.color,
                 p1.x, p1.y, v1.color,
                 p2.x, p2.y, v2.color
@@ -168,7 +171,7 @@ public class SoftwareRenderer extends Application {
             Vector3f p1 = v1.mul(r, new Vector3f()).mulProject(camera.getViewProjMatrix());
             Vector3f p2 = v2.mul(r, new Vector3f()).mulProject(camera.getViewProjMatrix());
 
-            rasterizer.fillTriangle(
+            rasterizer.fillTri(
                     p0.x, p0.y, 0xff0000,
                     p1.x, p1.y, 0x00ff00,
                     p2.x, p2.y, 0x0000ff
