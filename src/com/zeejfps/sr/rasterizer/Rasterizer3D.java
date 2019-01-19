@@ -1,5 +1,6 @@
 package com.zeejfps.sr.rasterizer;
 
+import com.zeejfps.sr.ZMath;
 import org.joml.Vector2i;
 
 public class Rasterizer3D extends Rasterizer {
@@ -34,10 +35,10 @@ public class Rasterizer3D extends Rasterizer {
         Vector2i v2 = viewportToRasterCoord(x2, y2);
 
         // Compute triangle bounding box
-        int minX = min3(v0.x, v1.x, v2.x);
-        int minY = min3(v0.y, v1.y, v2.y);
-        int maxX = max3(v0.x, v1.x, v2.x);
-        int maxY = max3(v0.y, v1.y, v2.y);
+        int minX = ZMath.min3(v0.x, v1.x, v2.x);
+        int minY = ZMath.min3(v0.y, v1.y, v2.y);
+        int maxX = ZMath.max3(v0.x, v1.x, v2.x);
+        int maxY = ZMath.max3(v0.y, v1.y, v2.y);
 
         // Clip against screen bounds
         minX = Math.max(minX, 0);
@@ -85,7 +86,7 @@ public class Rasterizer3D extends Rasterizer {
                     int g = (int)(wr * ((c0 & 0x00ff00) >>  8) + wg * ((c1 & 0x00ff00) >>  8) + wb * ((c2 & 0x00ff00) >>  8));
                     int b = (int)(wr * ((c0 & 0x0000ff)) + wg * ((c1 & 0x0000ff)) + wb * ((c2 & 0x0000ff)));
                     int color = (r << 16) | (g << 8) | b;
-                    drawPixel(p.x + p.y * raster.width, color);
+                    raster.pixels[p.x + p.y * raster.width] = color;
                 }
 
                 // One step to the right
@@ -100,14 +101,6 @@ public class Rasterizer3D extends Rasterizer {
             w2_row += B01;
         }
 
-    }
-
-    private int max3(int a, int b, int c) {
-        return Math.max(a, Math.max(b,c));
-    }
-
-    private int min3(int a, int b, int c) {
-        return Math.min(a, Math.min(b, c));
     }
 
     private int edge(Vector2i a, Vector2i b, Vector2i c) {

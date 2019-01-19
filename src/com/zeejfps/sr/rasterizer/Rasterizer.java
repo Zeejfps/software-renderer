@@ -58,15 +58,32 @@ public class Rasterizer {
     }
 
     public void drawLine(int startX, int startY, int endX, int endY, int color) {
+        if (startX == endX){
+            drawVerticalLine(startX, startY, endY - endX, color);
+        }
+        else if (startY == endY) {
+            drawHorizontalLine(startX, startY, endX - startX, color);
+        }
+        else {
 
+            int dx = endX - startX;
+            int dy = endY - startY;
+            int d = 2 * dy - dx;
+            int y = startY;
+
+            for (int x = startX; x <= endX; x++) {
+                drawPixel(x, y, color);
+                if (d > 0) {
+                    y += 1;
+                    d -= 2 * dx;
+                }
+                d += 2 * dy;
+            }
+        }
     }
 
     public void drawPixel(int x, int y, int color) {
         raster.pixels[x + raster.width * y] = color;
-    }
-
-    public void drawPixel(int index, int color) {
-        raster.pixels[index] = color;
     }
 
 }
