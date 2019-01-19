@@ -148,8 +148,7 @@ public class Raster {
 
             if (dx >= dy) {
                 for (; x != endX; x += ix) {
-                    //this.pixels[x + y * this.width] = color;
-                    drawPixel(x, y, color);
+                    this.colorBuffer[x + y * this.width] = color;
                     d += dy2;
                     if (d > dx) {
                         y += iy;
@@ -158,8 +157,7 @@ public class Raster {
                 }
             } else {
                 for (; y != endY; y += iy) {
-                    //this.pixels[x + y * this.width] = color;
-                    drawPixel(x, y, color);
+                    this.colorBuffer[x + y * this.width] = color;
                     d += dx2;
                     if (d > dy) {
                         x += ix;

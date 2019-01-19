@@ -14,7 +14,7 @@ public class SoftwareRenderer extends Application {
     private final Raster3D raster;
     private final Camera camera;
 
-    private Mesh car;
+    private Mesh car, cube;
 
     public SoftwareRenderer() {
         Config config = new Config();
@@ -28,7 +28,8 @@ public class SoftwareRenderer extends Application {
         camera = new Camera(65f, (float)display.getWidth() / display.getHeight(), 0.01f, 100f);
 
         try {
-            car = OBJImporter.load("res/cube.obj");
+            car = OBJImporter.load("res/car.obj");
+            cube = OBJImporter.load("res/cube.obj");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -103,6 +104,8 @@ public class SoftwareRenderer extends Application {
        // renderTriangle(vertices[0], vertices[2], vertices[1]);
 
         renderMesh(car);
+
+        renderMesh(cube);
 
         fps++;
         if (System.currentTimeMillis() - startTime >= 1000) {
@@ -182,9 +185,8 @@ public class SoftwareRenderer extends Application {
 
             Vector3f normal = p1.sub(p0, new Vector3f()).cross(p2.sub(p0, new Vector3f()));
             float v = normal.dot(p0);
-            System.out.println(v);
             if (v <= 0.0f) {
-                return;
+                //return;
             }
 
             Vector2i vp0 = ndcToRasterCoord(p0.x, p0.y);
