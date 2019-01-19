@@ -1,6 +1,7 @@
 package com.zeejfps.sr;
 
 import org.joml.Matrix4f;
+import org.joml.Vector2i;
 import org.joml.Vector4f;
 
 public class Camera {
@@ -21,4 +22,5 @@ public class Camera {
     public Matrix4f getViewProjMatrix() {
         return viewProjMatrix;
     }
+
 }

@@ -32,6 +32,24 @@ public class Rasterizer {
     }
 
     public void fillRect(int x, int y, int width, int height, int color) {
+        if (x < 0) {
+            width += x;
+            x = 0;
+        }
+
+        if (y < 0) {
+            height += y;
+            y = 0;
+        }
+
+        if (x+width > raster.width) {
+            width = raster.width - x;
+        }
+
+        if (y + height > raster.height) {
+            height = raster.height - y;
+        }
+
         for (int i = 0; i < height; i++) {
             int rasterIndex = x + (y+i)*raster.width;
             for (int j = 0; j < width; j++) {

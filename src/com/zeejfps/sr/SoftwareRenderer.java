@@ -24,7 +24,7 @@ public class SoftwareRenderer extends Application {
     public SoftwareRenderer() {
         Config config = new Config();
         config.fullscreen = false;
-        config.renderScale = 0.7f;
+        config.renderScale = 0.3f;
         display = new AwtDisplay(config);
         BufferedImage img = display.getFrameBuffer();
         int[] pixels = ((DataBufferInt)img.getRaster().getDataBuffer()).getData();
@@ -61,15 +61,15 @@ public class SoftwareRenderer extends Application {
         Arrays.fill(colorBuffer.pixels, 0x002233);
 
         //rasterizer.drawHorizontalLine(2, 2, 2, 0xff00ff);
-        rasterizer.drawVerticalLine(2, 2, 2, 0xff00ff);
+        //rasterizer.drawVerticalLine(2, 2, 2, 0xff00ff);
 
-        rasterizer.drawRect(1, 1, 20, 20, 0xff0000);
+        rasterizer.fillRect(100, 25, 400, 320, 0xff0000);
 
-        rasterizer.fillRect(5, 5, 20, 20, 0xff00ff);
+        //rasterizer.fillRect(5, 5, 20, 20, 0xff00ff);
 
-        rasterizer.drawLine(15, 10, 15, 40, 0xffff00);
+        //rasterizer.drawLine(15, 10, 15, 40, 0xffff00);
 
-        rasterizer.drawLine(25, 25, 180, 240, 0xffff00);
+        //rasterizer.drawLine(25, 25, 180, 240, 0xffff00);
 
         /*rasterizer.fillTriangle(
                 0.5f, 0.1f, 0xff0000,

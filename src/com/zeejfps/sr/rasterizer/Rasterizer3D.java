@@ -59,7 +59,8 @@ public class Rasterizer3D extends Rasterizer {
         int w1_row = edge(x2, y2, x0, y0, minX, minY);
         int w2_row = edge(x0, y0, x1, y1, minX, minY);
 
-        float area = edge(x0, y0, x1, y1, x2, y2); // area of the triangle multiplied by 2
+        // area of the triangle multiplied by 2
+        float area = edge(x0, y0, x1, y1, x2, y2);
         if (area == 0)
             return;
 
