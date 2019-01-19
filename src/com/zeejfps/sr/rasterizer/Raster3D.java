@@ -144,6 +144,10 @@ public class Raster3D extends Raster {
                 temp = vx1;
                 vx1 = vx0;
                 vx0 = temp;
+
+                temp = vy1;
+                vy1 = vy0;
+                vy0 = temp;
             }
             fillFlatTopTri(vx0, vy0, vx1, vy1, vx2, vy2, color);
         }
@@ -152,6 +156,10 @@ public class Raster3D extends Raster {
                 temp = vy2;
                 vy2 = vy1;
                 vy1 = temp;
+
+                temp = vx2;
+                vx2 = vx1;
+                vx1 = temp;
             }
             fillFlatBottomTri(vx0, vy0, vx1, vy1, vx2, vy2, color);
         }

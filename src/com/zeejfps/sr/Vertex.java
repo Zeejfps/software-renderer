@@ -5,7 +5,7 @@ import org.joml.Vector4f;
 
 public class Vertex {
 
-    public final Vector4f position;
+    public final Vector3f position;
     public final int color;
 
     public Vertex(Vector3f position, int color) {
@@ -13,7 +13,7 @@ public class Vertex {
     }
 
     public Vertex(float x, float y, float z, int color) {
-        this.position = new Vector4f(x, y, z, 1f);
+        this.position = new Vector3f(x, y, z);
         this.color = color;
     }
 

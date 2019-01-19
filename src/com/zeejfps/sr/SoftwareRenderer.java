@@ -21,14 +21,14 @@ public class SoftwareRenderer extends Application {
         config.fullscreen = false;
         config.renderScale = 0.9f;
 
-        raster = new Raster3D(640, 480);
+        raster = new Raster3D(640, 240);
 
         display = new AwtDisplay(config, raster);
 
         camera = new Camera(65f, (float)display.getWidth() / display.getHeight(), 0.01f, 100f);
 
         try {
-            car = OBJImporter.load("res/car.obj");
+            car = OBJImporter.load("res/cube.obj");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -125,9 +125,11 @@ public class SoftwareRenderer extends Application {
 
     private void renderTriangle(Vertex v0, Vertex v1, Vertex v2) {
 
-        Vector4f p0 = v0.position.mul(new Matrix4f().rotateY(rotation), new Vector4f()).mulProject(camera.getViewProjMatrix());
-        Vector4f p1 = v1.position.mul(new Matrix4f().rotateY(rotation), new Vector4f()).mulProject(camera.getViewProjMatrix());
-        Vector4f p2 = v2.position.mul(new Matrix4f().rotateY(rotation), new Vector4f()).mulProject(camera.getViewProjMatrix());
+        Vector3f normal = new Vector3f().cross(new Vector3f(v0.position), v1.position);
+
+        Vector4f p0 = new Vector4f(v0.position, 1f).mul(new Matrix4f().rotateY(rotation)).mulProject(camera.getViewProjMatrix());
+        Vector4f p1 = new Vector4f(v1.position, 1f).mul(new Matrix4f().rotateY(rotation)).mulProject(camera.getViewProjMatrix());
+        Vector4f p2 = new Vector4f(v2.position, 1f).mul(new Matrix4f().rotateY(rotation)).mulProject(camera.getViewProjMatrix());
 
         Vector2i vp0 = ndcToRasterCoord(p0.x, p0.y);
         Vector2i vp1 = ndcToRasterCoord(p1.x, p1.y);
@@ -178,11 +180,18 @@ public class SoftwareRenderer extends Application {
             Vector3f p1 = v1.mul(r, new Vector3f()).mulProject(camera.getViewProjMatrix());
             Vector3f p2 = v2.mul(r, new Vector3f()).mulProject(camera.getViewProjMatrix());
 
+            Vector3f normal = p1.sub(p0, new Vector3f()).cross(p2.sub(p0, new Vector3f()));
+            float v = normal.dot(p0);
+            System.out.println(v);
+            if (v <= 0.0f) {
+                return;
+            }
+
             Vector2i vp0 = ndcToRasterCoord(p0.x, p0.y);
             Vector2i vp1 = ndcToRasterCoord(p1.x, p1.y);
             Vector2i vp2 = ndcToRasterCoord(p2.x, p2.y);
 
-            raster.fillTri(vp0.x, vp0.y, vp1.x, vp1.y, vp2.x, vp2.y, 0xff00ff);
+            raster.fillTri(vp0.x, vp0.y, vp1.x, vp1.y, vp2.x, vp2.y, 0xffffff);
             raster.drawTri(vp0.x, vp0.y, vp1.x, vp1.y, vp2.x, vp2.y, 0x00ff23);
         }
     }
