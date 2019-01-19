@@ -1,8 +1,14 @@
 package com.zeejfps.sr;
 
+import com.zeejfps.sr.rasterizer.Raster;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.image.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
+import java.awt.image.DirectColorModel;
+import java.awt.image.WritableRaster;
+import java.util.Hashtable;
 
 public class AwtDisplay {
 
@@ -16,7 +22,7 @@ public class AwtDisplay {
     private int width;
     private int height;
 
-    public AwtDisplay(Config config) {
+    public AwtDisplay(Config config, Raster raster) {
 
         // Create the frame to hold the canvas
         frame = new JFrame();
@@ -48,12 +54,11 @@ public class AwtDisplay {
         frame.pack();
         frame.setLocationRelativeTo(null);
 
-        this.frameBuffer = new BufferedImage(resolutionX, resolutionY, BufferedImage.TYPE_INT_RGB);
-        /*pixels = new int[resolutionX * resolutionY + 1];
-        DataBufferInt dataBuffer = new DataBufferInt(pixels, pixels.length);
+        //this.frameBuffer = new BufferedImage(resolutionX, resolutionY, BufferedImage.TYPE_INT_RGB);
+        DataBufferInt dataBuffer = new DataBufferInt(raster.getColorBuffer(), raster.getColorBuffer().length);
         DirectColorModel colorModel = new DirectColorModel(32, 0xFF0000, 0xFF00, 0xFF);
-        WritableRaster raster = Raster.createWritableRaster(colorModel.createCompatibleSampleModel(resolutionX, resolutionY), dataBuffer, null);
-        this.frameBuffer = new BufferedImage(colorModel, raster, false, new Hashtable<>());*/
+        WritableRaster wr = java.awt.image.Raster.createWritableRaster(colorModel.createCompatibleSampleModel(resolutionX, resolutionY), dataBuffer, null);
+        this.frameBuffer = new BufferedImage(colorModel, wr, false, new Hashtable<>());
     }
 
     public void show() {

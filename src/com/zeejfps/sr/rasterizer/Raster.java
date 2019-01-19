@@ -1,19 +1,27 @@
 package com.zeejfps.sr.rasterizer;
 
-public class Rasterizer {
+public class Raster {
 
-    protected Bitmap raster;
+    protected int[] colorBuffer;
+    protected int width;
+    protected int height;
 
-    public Rasterizer(Bitmap raster) {
-        this.raster = raster;
+    public Raster(int width, int height) {
+        this.colorBuffer = new int[width * height];
+        this.width = width;
+        this.height = height;
     }
 
-    public void setRaster(Bitmap bitmap) {
-        this.raster = raster;
+    public int[] getColorBuffer() {
+        return colorBuffer;
     }
 
-    public Bitmap getRaster() {
-        return raster;
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
     }
 
     public void drawCircle(int centerX, int centerY, int radius, int color) {
@@ -42,25 +50,25 @@ public class Rasterizer {
             y = 0;
         }
 
-        if (x+width > raster.width) {
-            width = raster.width - x;
+        if (x+width > this.width) {
+            width = this.width - x;
         }
 
-        if (y + height > raster.height) {
-            height = raster.height - y;
+        if (y + height > this.height) {
+            height = this.height - y;
         }
 
         for (int i = 0; i < height; i++) {
-            int rasterIndex = x + (y+i)*raster.width;
+            int thisIndex = x + (y+i)*this.width;
             for (int j = 0; j < width; j++) {
-                raster.pixels[rasterIndex] = color;
-                rasterIndex++;
+                this.colorBuffer[thisIndex] = color;
+                thisIndex++;
             }
         }
     }
 
     protected void drawHorizontalLine(int x, int y, int width, int color) {
-        if (y < 0 || y >= raster.height)
+        if (y < 0 || y >= this.height)
             return;
 
         if (x < 0) {
@@ -68,19 +76,19 @@ public class Rasterizer {
             x = 0;
         }
 
-        if (x + width > raster.width) {
-            width = raster.width - x;
+        if (x + width > this.width) {
+            width = this.width - x;
         }
 
-        int rasterIndex = x + raster.width * y;
+        int thisIndex = x + this.width * y;
         for (int i = 0; i < width; i++) {
-            raster.pixels[rasterIndex] = color;
-            rasterIndex++;
+            this.colorBuffer[thisIndex] = color;
+            thisIndex++;
         }
     }
 
     protected void drawVerticalLine(int x, int y, int height, int color) {
-        if (x < 0 || x >= raster.width)
+        if (x < 0 || x >= this.width)
             return;
 
         if (y < 0) {
@@ -88,14 +96,14 @@ public class Rasterizer {
             y = 0;
         }
 
-        if (y + height > raster.height) {
-            height = raster.height - y;
+        if (y + height > this.height) {
+            height = this.height - y;
         }
 
-        int rasterIndex = x + raster.width * y;
+        int thisIndex = x + this.width * y;
         for (int i = 0; i < height; i++) {
-            raster.pixels[rasterIndex] = color;
-            rasterIndex += raster.width;
+            this.colorBuffer[thisIndex] = color;
+            thisIndex += this.width;
         }
     }
 
@@ -107,6 +115,19 @@ public class Rasterizer {
             drawHorizontalLine(startX, startY, endX - startX, color);
         }
         else {
+
+            if (startX < 0)
+                startX = 0;
+
+            if (endX > this.width)
+                endX = this.width;
+
+            if (startY < 0)
+                startY = 0;
+
+            if (endY > this.height)
+                endY = this.height;
+
             int d = 0;
 
             int dx = Math.abs(endX - startX);
@@ -123,7 +144,8 @@ public class Rasterizer {
 
             if (dx >= dy) {
                 for (; x != endX; x += ix) {
-                    raster.pixels[x + y * raster.width] = color;
+                    //this.pixels[x + y * this.width] = color;
+                    drawPixel(x, y, color);
                     d += dy2;
                     if (d > dx) {
                         y += iy;
@@ -132,7 +154,8 @@ public class Rasterizer {
                 }
             } else {
                 for (; y != endY; y += iy) {
-                    raster.pixels[x + y * raster.width] = color;
+                    //this.pixels[x + y * this.width] = color;
+                    drawPixel(x, y, color);
                     d += dx2;
                     if (d > dy) {
                         x += ix;
@@ -144,9 +167,9 @@ public class Rasterizer {
     }
 
     public void drawPixel(int x, int y, int color) {
-        if (x < 0 || y < 0 || x >= raster.width || y >= raster.height)
+        if (x < 0 || y < 0 || x >= this.width || y >= this.height)
             return;
-        raster.pixels[x + raster.width * y] = color;
+        this.colorBuffer[x + this.width * y] = color;
     }
 
 }

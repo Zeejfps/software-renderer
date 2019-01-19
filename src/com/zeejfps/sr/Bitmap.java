@@ -1,4 +1,4 @@
-package com.zeejfps.sr.rasterizer;
+package com.zeejfps.sr;
 
 import java.util.Arrays;
 

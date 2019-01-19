@@ -1,29 +1,21 @@
 package com.zeejfps.sr.rasterizer;
 
 import com.zeejfps.sr.ZMath;
-import org.joml.Vector2i;
 
 import java.util.Arrays;
 
-public class Rasterizer3D extends Rasterizer {
+public class Raster3D extends Raster {
 
     protected float[] depthBuffer;
 
-    public Rasterizer3D(Bitmap raster) {
-        super(raster);
-        depthBuffer = new float[raster.width * raster.height];
+    public Raster3D(int width, int height) {
+        super(width, height);
+        depthBuffer = new float[this.width * this.height];
         Arrays.fill(depthBuffer, Float.MAX_VALUE);
     }
 
-    public Vector2i viewportToRasterCoord(float x, float y) {
-        Vector2i result = new Vector2i();
-
-        float halfWidth = raster.width * 0.5f;
-        float halfHeight = raster.height * 0.5f;
-
-        result.x = (int)(halfWidth + halfWidth * x + 0.5f);
-        result.y = (int)(halfHeight + halfHeight * y + 0.5f);
-        return result;
+    public float[] getDepthBuffer() {
+        return depthBuffer;
     }
 
     public void drawTri(int x0, int y0, int x1, int y1, int x2, int y2, int color) {
@@ -32,23 +24,10 @@ public class Rasterizer3D extends Rasterizer {
         drawLine(x2, y2, x0, y0, color);
     }
 
-    public void fillTri(
-        float x0, float y0, int c0,
-        float x1, float y1, int c1,
-        float x2, float y2, int c2
-    ) {
-        Vector2i v0 = viewportToRasterCoord(x0, y0);
-        Vector2i v1 = viewportToRasterCoord(x1, y1);
-        Vector2i v2 = viewportToRasterCoord(x2, y2);
-
-        fillTriangleFast(v0.x, v0.y, c0, v1.x, v1.y, c1, v2.x, v2.y, c2);
-    }
-
     /*
      * A lot of drawing code comes of this article https://fgiesen.wordpress.com/2013/02/06/the-barycentric-conspirac/
      */
-    public void fillTriangleFast(int x0, int y0, int c0, int x1, int y1, int c1, int x2, int y2, int c2)
-    {
+    public void fillTriangleFast(int x0, int y0, int c0, int x1, int y1, int c1, int x2, int y2, int c2) {
         // area of the triangle multiplied by 2
         float area = edge(x0, y0, x1, y1, x2, y2);
         if (area == 0)
@@ -63,8 +42,8 @@ public class Rasterizer3D extends Rasterizer {
         // Clip against screen bounds
         minX = Math.max(minX, 0);
         minY = Math.max(minY, 0);
-        maxX = Math.min(maxX, raster.width - 1);
-        maxY = Math.min(maxY, raster.height - 1);
+        maxX = Math.min(maxX, this.width - 1);
+        maxY = Math.min(maxY, this.height - 1);
 
         // Triangle setup
         int A01 = y0 - y1, B01 = x1 - x0;
@@ -80,7 +59,7 @@ public class Rasterizer3D extends Rasterizer {
         for (int i = minY; i <= maxY; i++) {
 
             // To save on a couple multiplications
-            int index = minX + i * raster.width;
+            int index = minX + i * this.width;
 
             // Barycentric coordinates at start of row
             int w0 = w0_row;
@@ -100,7 +79,7 @@ public class Rasterizer3D extends Rasterizer {
                     int g = (int)(wr * ((c0 & 0x00ff00) >>  8) + wg * ((c1 & 0x00ff00) >>  8) + wb * ((c2 & 0x00ff00) >>  8));
                     int b = (int)(wr * ((c0 & 0x0000ff)) + wg * ((c1 & 0x0000ff)) + wb * ((c2 & 0x0000ff)));
                     int color = (r << 16) | (g << 8) | b;
-                    raster.pixels[index] = color;
+                    this.colorBuffer[index] = color;
                 }
 
                 // One step to the right
@@ -117,8 +96,83 @@ public class Rasterizer3D extends Rasterizer {
 
     }
 
+    public void fillTri(int x0, int y0, int x1, int y1, int x2, int y2, int color) {
+
+        int vx0 = x0;
+        int vy0 = y0;
+
+        int vx1 = x1;
+        int vy1 = y1;
+
+        int vx2 = x2;
+        int vy2 = y2;
+
+        int temp;
+        if (vy1 < vy0) {
+            temp = vy1;
+            vy1 = vy0;
+            vy0 = temp;
+        }
+
+        if (vy2 < vy1) {
+            temp = vy1;
+            vy1 = vy2;
+            vy2 = temp;
+        }
+
+        if (vy1 < vy0) {
+            temp = vy1;
+            vy1 = vy0;
+            vy0 = temp;
+        }
+
+        // Check for flat top
+        if (vy0 == vy1) {
+            if (vx1 < vx0) {
+                temp = vx1;
+                vx1 = vx0;
+                vx0 = temp;
+            }
+            fillFlatTopTri(vx0, vy0, vx1, vy1, vx2, vy2, color);
+        }
+        else if (vy1 == vy2) {
+            if (vx2 < vx1) {
+                temp = vy2;
+                vy2 = vy1;
+                vy1 = temp;
+            }
+            fillFlatBottomTri(vx0, vy0, vx1, vy1, vx2, vy2, color);
+        }
+        else {
+
+            float a = (vy1 - vy0) / (float)(vy2 - vy0);
+
+            int vix = (int)(vx0 + (vx2 - vx0) * a + 0.5f);
+            int viy = (int)(vy0 + (vy2 - vy0) * a + 0.5f);
+
+            if (vx1 < vix) {
+                fillFlatBottomTri(vx0, vy0, vx1, vy1, vix, viy, color);
+                fillFlatTopTri(vx1, vy1, vix, viy, vx2, vy2, color);
+            }
+            else {
+                fillFlatBottomTri(vx0, vy0, vix, viy, vx1, vy1, color);
+                fillFlatTopTri(vix, viy, vx1, vy1, vx2, vy2, color);
+            }
+
+        }
+
+    }
+
     private int edge(int x0, int y0, int x1, int y1, int x2, int y2) {
         return (x1-x0)*(y2-y0) - (y1-y0)*(x2-x0);
+    }
+
+    private void fillFlatBottomTri(int x0, int y0, int x1, int y1, int x2, int y2, int color) {
+        System.out.println("Drawing flat bottom tri");
+    }
+
+    private void fillFlatTopTri(int x0, int y0, int x1, int y1, int x2, int y2, int color) {
+        System.out.println("Drawing flat top tri");
     }
 
 }

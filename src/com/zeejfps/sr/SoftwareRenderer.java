@@ -1,22 +1,17 @@
 package com.zeejfps.sr;
 
-import com.zeejfps.sr.rasterizer.Bitmap;
-import com.zeejfps.sr.rasterizer.Rasterizer3D;
+import com.zeejfps.sr.rasterizer.Raster3D;
 import com.zeejfps.sr.utils.OBJImporter;
 import org.joml.*;
 
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
 import java.io.IOException;
 import java.util.Arrays;
 
 public class SoftwareRenderer extends Application {
 
     private final AwtDisplay display;
-    private final Rasterizer3D rasterizer;
+    private final Raster3D raster;
     private final Camera camera;
-
-    private final Bitmap colorBuffer;
 
     private Mesh car;
 
@@ -24,12 +19,11 @@ public class SoftwareRenderer extends Application {
         Config config = new Config();
         config.fullscreen = false;
         config.renderScale = 0.5f;
-        display = new AwtDisplay(config);
-        BufferedImage img = display.getFrameBuffer();
-        int[] pixels = ((DataBufferInt)img.getRaster().getDataBuffer()).getData();
-        this.colorBuffer = Bitmap.of(pixels, img.getWidth(), img.getHeight());
 
-        rasterizer = new Rasterizer3D(this.colorBuffer);
+        raster = new Raster3D(320, 240);
+
+        display = new AwtDisplay(config, raster);
+
         camera = new Camera(65f, (float)display.getWidth() / display.getHeight(), 0.01f, 100f);
 
         try {
@@ -57,52 +51,48 @@ public class SoftwareRenderer extends Application {
     @Override
     public void render() {
 
-        Arrays.fill(colorBuffer.pixels, 0x002233);
+        Arrays.fill(raster.getColorBuffer(), 0x002233);
 
-        //rasterizer.drawHorizontalLine(2, 2, 2, 0xff00ff);
-        //rasterizer.drawVerticalLine(2, 2, 2, 0xff00ff);
+        //thisizer.drawHorizontalLine(2, 2, 2, 0xff00ff);
+        //thisizer.drawVerticalLine(2, 2, 2, 0xff00ff);
 
-        //rasterizer.fillRect(100, 25, 400, 320, 0xff0000);
+        //thisizer.fillRect(100, 25, 400, 320, 0xff0000);
 
-        //rasterizer.drawRect(4, 4, 22, 22, 0xffff00);
+        //thisizer.drawRect(4, 4, 22, 22, 0xffff00);
 
-        //rasterizer.drawHorizontalLine(-15, 25, 10, 0xff0000);
+        //thisizer.drawHorizontalLine(-15, 25, 10, 0xff0000);
 
-        //rasterizer.fillRect(5, 5, 20, 20, 0xff00ff);
+        //thisizer.fillRect(5, 5, 20, 20, 0xff00ff);
 
-        //rasterizer.drawLine(40, 40, 41, 65, 0xff2233);
+        //thisizer.drawLine(40, 40, 41, 65, 0xff2233);
 
-        //rasterizer.drawLine(15, 10, 15, 40, 0xffff00);
+        //thisizer.drawLine(15, 10, 15, 40, 0xffff00);
 
-        //rasterizer.drawLine(25, 25, 180, 240, 0xffff00);
+        //thisizer.drawLine(25, 25, 180, 240, 0xffff00);
 
-        rasterizer.drawTri(10, 10, 50, 30, 15, 20, 0xff2244);
+        raster.drawTri(10, 10, 50, 30, 15, 20, 0xff2244);
 
-        rasterizer.drawLine(20, 20, 5, 5, 0xff00ff);
+        raster.drawLine(20, 20, 5, 5, 0xff00ff);
 
-        /*rasterizer.fillTriangleFast(
+        /*thisizer.fillTriangleFast(
                 0.5f, 0.1f, 0xff0000,
                 0.8f, 0.5f, 0x00ff00,
                 0.2f, 0.9f, 0x0000ff
         );
 
-        rasterizer.fillTriangleFast(
+        thisizer.fillTriangleFast(
                 0f, -0.5f, 0xff00ff,
                 0.5f, 0.5f, 0xff00ff,
                 -0.3f, 0.7f, 0xff00ff
         );
 
-        rasterizer.fillTriangleFast(
+        thisizer.fillTriangleFast(
                 -0.5f, -0.8f, 0xf430ff,
                 0.1f, 0.3f, 0xff055f,
                 -0.9f, 0.2f, 0xf230ff
         );*/
 
-        rasterizer.fillTri(
-                -0.2f, -0.1f, 0xff00ff,
-                0.23f, 1.2f, 0xff00ff,
-                -0.2f, 0.9f, 0x3300ff
-        );
+        raster.fillTri(20, 20, 40, 20, 30, 45, 0xff00ff);
 
        // renderTriangle(vertices[0], vertices[1], vertices[2]);
        // renderTriangle(vertices[0], vertices[2], vertices[1]);
@@ -131,15 +121,29 @@ public class SoftwareRenderer extends Application {
     private void renderTriangle(Vertex v0, Vertex v1, Vertex v2) {
 
         Vector4f p0 = v0.position.mul(new Matrix4f().rotateY(rotation), new Vector4f()).mulProject(camera.getViewProjMatrix());
-        Vector4f p1 = v1.position.mul(new Matrix4f().rotateY(rotation), new Vector4f()).mulProject(camera.getViewProjMatrix(), new Vector4f());
-        Vector4f p2 = v2.position.mul(new Matrix4f().rotateY(rotation), new Vector4f()).mulProject(camera.getViewProjMatrix(), new Vector4f());
+        Vector4f p1 = v1.position.mul(new Matrix4f().rotateY(rotation), new Vector4f()).mulProject(camera.getViewProjMatrix());
+        Vector4f p2 = v2.position.mul(new Matrix4f().rotateY(rotation), new Vector4f()).mulProject(camera.getViewProjMatrix());
 
-        rasterizer.fillTri(
-                p0.x, p0.y, v0.color,
-                p1.x, p1.y, v1.color,
-                p2.x, p2.y, v2.color
-        );
+        Vector2i vp0 = viewportToRasterCoord(p0.x, p0.y);
+        Vector2i vp1 = viewportToRasterCoord(p1.x, p1.y);
+        Vector2i vp2 = viewportToRasterCoord(p2.x, p2.y);
+
+        //thisizer.drawTri(vp0.x, vp0.y, vp1.x, vp1.y, vp2.x, vp2.y, 0xff2233);
+
+        raster.fillTri(vp0.x, vp0.y, vp1.x, vp1.y, vp2.x, vp2.y, 0xff00ff);
     }
+
+    private Vector2i viewportToRasterCoord(float x, float y) {
+        Vector2i result = new Vector2i();
+
+        float halfWidth = raster.getWidth() * 0.5f;
+        float halfHeight = raster.getHeight() * 0.5f;
+
+        result.x = (int)(halfWidth + halfWidth * x + 0.5f);
+        result.y = (int)(halfHeight + halfHeight * y + 0.5f);
+        return result;
+    }
+
     private void renderMesh(Mesh mesh) {
         Matrix4f transform = new Matrix4f();
 
@@ -171,11 +175,11 @@ public class SoftwareRenderer extends Application {
             Vector3f p1 = v1.mul(r, new Vector3f()).mulProject(camera.getViewProjMatrix());
             Vector3f p2 = v2.mul(r, new Vector3f()).mulProject(camera.getViewProjMatrix());
 
-            rasterizer.fillTri(
-                    p0.x, p0.y, 0xff0000,
-                    p1.x, p1.y, 0x00ff00,
-                    p2.x, p2.y, 0x0000ff
-            );
+//            thisizer.fillTri(
+//                    p0.x, p0.y, 0xff0000,
+//                    p1.x, p1.y, 0x00ff00,
+//                    p2.x, p2.y, 0x0000ff
+//            );
         }
     }
 
