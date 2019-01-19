@@ -1,4 +1,4 @@
-package com.zeejfps.sr;
+package com.zeejfps.sr.rasterizer;
 
 import org.joml.Vector2i;
 
@@ -85,7 +85,7 @@ public class Rasterizer3D extends Rasterizer {
                     int g = (int)(wr * ((c0 & 0x00ff00) >>  8) + wg * ((c1 & 0x00ff00) >>  8) + wb * ((c2 & 0x00ff00) >>  8));
                     int b = (int)(wr * ((c0 & 0x0000ff)) + wg * ((c1 & 0x0000ff)) + wb * ((c2 & 0x0000ff)));
                     int color = (r << 16) | (g << 8) | b;
-                    renderPixel(p.x + p.y * raster.width, color);
+                    drawPixel(p.x + p.y * raster.width, color);
                 }
 
                 // One step to the right

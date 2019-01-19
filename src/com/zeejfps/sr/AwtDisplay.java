@@ -14,6 +14,7 @@ public class AwtDisplay {
     private Canvas canvas;
     private BufferedImage frameBuffer;
     private BufferStrategy bufferStrategy;
+    private JPanel jPanel;
 
     private int width;
     private int height;
@@ -27,6 +28,8 @@ public class AwtDisplay {
 
         // Create the frame to hold the canvas
         frame = new JFrame();
+
+        jPanel = new JPanel();
 
         int resolutionX, resolutionY;
         if (config.fullscreen) {
@@ -43,9 +46,12 @@ public class AwtDisplay {
             resolutionX = (int)(config.windowWidth * config.renderScale + 0.5f);
             resolutionY = (int)(config.windowHeight * config.renderScale + 0.5f);
         }
-        canvas.setPreferredSize(new Dimension(this.width, this.height));
-        frame.getContentPane().setBackground(Color.BLACK);
-        frame.getContentPane().add(canvas);
+        //canvas.setPreferredSize(new Dimension(this.width, this.height));
+        jPanel.setPreferredSize(new Dimension(this.width, this.height));
+
+        //frame.getContentPane().setBackground(Color.BLACK);
+        //frame.getContentPane().add(canvas);
+        frame.setContentPane(jPanel);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setResizable(false);
         frame.pack();
@@ -59,7 +65,7 @@ public class AwtDisplay {
     }
 
     public void swapBuffers() {
-        if (bufferStrategy == null) {
+        /*if (bufferStrategy == null) {
             canvas.createBufferStrategy(2);
             bufferStrategy = canvas.getBufferStrategy();
         }
@@ -68,7 +74,9 @@ public class AwtDisplay {
         g.drawImage(frameBuffer, 0, 0, canvas.getWidth(), canvas.getHeight(), null);
         g.dispose();
         Toolkit.getDefaultToolkit().sync();
-        bufferStrategy.show();
+        bufferStrategy.show();*/
+        Graphics g = jPanel.getGraphics();
+        g.drawImage(frameBuffer, 0, 0, jPanel.getWidth(), jPanel.getHeight(), null);
     }
 
     public BufferedImage getFrameBuffer() {

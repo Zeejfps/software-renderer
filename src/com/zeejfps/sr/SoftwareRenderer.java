@@ -1,8 +1,11 @@
 package com.zeejfps.sr;
 
+import com.zeejfps.sr.rasterizer.Bitmap;
+import com.zeejfps.sr.rasterizer.Rasterizer3D;
 import com.zeejfps.sr.utils.OBJImporter;
 import org.joml.*;
 
+import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.io.IOException;
@@ -21,7 +24,7 @@ public class SoftwareRenderer extends Application {
     public SoftwareRenderer() {
         Config config = new Config();
         config.fullscreen = false;
-        config.renderScale = 0.25f;
+        config.renderScale = 0.45f;
         display = new AwtDisplay(config);
         BufferedImage img = display.getFrameBuffer();
         int[] pixels = ((DataBufferInt)img.getRaster().getDataBuffer()).getData();
@@ -57,6 +60,12 @@ public class SoftwareRenderer extends Application {
 
         Arrays.fill(colorBuffer.pixels, 0x002233);
 
+        //rasterizer.drawHorizontalLine(2, 2, 2, 0xff00ff);
+        //rasterizer.drawVerticalLine(2, 2, 2, 0xff00ff);
+
+        rasterizer.drawRect(1, 1, 20, 20, 0xff0000);
+
+        rasterizer.fillRect(5, 5, 20, 20, 0xff00ff);
 
         /*rasterizer.fillTriangle(
                 0.5f, 0.1f, 0xff0000,
