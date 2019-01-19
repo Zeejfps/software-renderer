@@ -57,7 +57,7 @@ public class AwtDisplay {
         //this.frameBuffer = new BufferedImage(resolutionX, resolutionY, BufferedImage.TYPE_INT_RGB);
         DataBufferInt dataBuffer = new DataBufferInt(raster.getColorBuffer(), raster.getColorBuffer().length);
         DirectColorModel colorModel = new DirectColorModel(32, 0xFF0000, 0xFF00, 0xFF);
-        WritableRaster wr = java.awt.image.Raster.createWritableRaster(colorModel.createCompatibleSampleModel(resolutionX, resolutionY), dataBuffer, null);
+        WritableRaster wr = java.awt.image.Raster.createWritableRaster(colorModel.createCompatibleSampleModel(raster.getWidth(), raster.getHeight()), dataBuffer, null);
         this.frameBuffer = new BufferedImage(colorModel, wr, false, new Hashtable<>());
     }
 

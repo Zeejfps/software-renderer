@@ -112,18 +112,30 @@ public class Raster3D extends Raster {
             temp = vy1;
             vy1 = vy0;
             vy0 = temp;
+
+            temp = vx1;
+            vx1 = vx0;
+            vx0 = temp;
         }
 
         if (vy2 < vy1) {
             temp = vy1;
             vy1 = vy2;
             vy2 = temp;
+
+            temp = vx1;
+            vx1 = vx2;
+            vx2 = temp;
         }
 
         if (vy1 < vy0) {
             temp = vy1;
             vy1 = vy0;
             vy0 = temp;
+
+            temp = vx1;
+            vx1 = vx0;
+            vx0 = temp;
         }
 
         // Check for flat top
@@ -168,11 +180,53 @@ public class Raster3D extends Raster {
     }
 
     private void fillFlatBottomTri(int x0, int y0, int x1, int y1, int x2, int y2, int color) {
-        System.out.println("Drawing flat bottom tri");
+
+        double m0 = (x1 - x0) / (double)(y1 - y0);
+        double m1 = (x2 - x0) / (double)(y2 - y0);
+
+        int ys = (int) Math.ceil(y0 - 0.5);
+        int ye = (int) Math.ceil(y2 - 0.5);
+
+        for (int y = ys; y < ye; y++) {
+
+            double px0 = m0 * (y + 0.5 - y0) + x0;
+            double px1 = m1 * (y + 0.5 - y0) + x0;
+
+            int xs = (int) Math.ceil(px0 - 0.5);
+            int xe = (int) Math.ceil(px1 - 0.5);
+
+            int index = xs + y * width;
+            for (int x = xs; x < xe; x++, index++) {
+                colorBuffer[index] = color;
+            }
+
+        }
+
     }
 
     private void fillFlatTopTri(int x0, int y0, int x1, int y1, int x2, int y2, int color) {
-        System.out.println("Drawing flat top tri");
+
+        double m0 = (x2 - x0) / (double)(y2 - y0);
+        double m1 = (x2 - x1) / (double)(y2 - y1);
+
+        int ys = (int) Math.ceil(y0 - 0.5);
+        int ye = (int) Math.ceil(y2 - 0.5);
+
+        for (int y = ys; y < ye; y++) {
+
+            double px0 = m0 * (y + 0.5 - y0) + x0;
+            double px1 = m1 * (y + 0.5 - y1) + x1;
+
+            int xs = (int) Math.ceil(px0 - 0.5);
+            int xe = (int) Math.ceil(px1 - 0.5);
+
+            int index = xs + y * width;
+            for (int x = xs; x < xe; x++, index++) {
+                colorBuffer[index] = color;
+            }
+
+        }
+
     }
 
 }

@@ -7,7 +7,11 @@ public class Raster {
     protected int height;
 
     public Raster(int width, int height) {
-        this.colorBuffer = new int[width * height];
+        this(new int[width * height], width, height);
+    }
+
+    protected Raster(int[] pixels, int width, int height) {
+        this.colorBuffer = pixels;
         this.width = width;
         this.height = height;
     }

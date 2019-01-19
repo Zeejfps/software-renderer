@@ -5,6 +5,7 @@ import com.zeejfps.sr.utils.OBJImporter;
 import org.joml.*;
 
 import java.io.IOException;
+import java.lang.Math;
 import java.util.Arrays;
 
 public class SoftwareRenderer extends Application {
@@ -18,7 +19,7 @@ public class SoftwareRenderer extends Application {
     public SoftwareRenderer() {
         Config config = new Config();
         config.fullscreen = false;
-        config.renderScale = 0.5f;
+        config.renderScale = 0.9f;
 
         raster = new Raster3D(320, 240);
 
@@ -92,7 +93,11 @@ public class SoftwareRenderer extends Application {
                 -0.9f, 0.2f, 0xf230ff
         );*/
 
-        raster.fillTri(20, 20, 40, 20, 30, 45, 0xff00ff);
+        raster.fillTri(40, 40, 90, 40, 20, 185, 0xff00ff);
+
+        raster.fillTri(120, 40, 90, 70, 100, 70, 0xff00ff);
+
+        raster.fillTri(150, 155, 170, 160, 140, 140, 0xff2233);
 
        // renderTriangle(vertices[0], vertices[1], vertices[2]);
        // renderTriangle(vertices[0], vertices[2], vertices[1]);
@@ -124,16 +129,14 @@ public class SoftwareRenderer extends Application {
         Vector4f p1 = v1.position.mul(new Matrix4f().rotateY(rotation), new Vector4f()).mulProject(camera.getViewProjMatrix());
         Vector4f p2 = v2.position.mul(new Matrix4f().rotateY(rotation), new Vector4f()).mulProject(camera.getViewProjMatrix());
 
-        Vector2i vp0 = viewportToRasterCoord(p0.x, p0.y);
-        Vector2i vp1 = viewportToRasterCoord(p1.x, p1.y);
-        Vector2i vp2 = viewportToRasterCoord(p2.x, p2.y);
-
-        //thisizer.drawTri(vp0.x, vp0.y, vp1.x, vp1.y, vp2.x, vp2.y, 0xff2233);
+        Vector2i vp0 = ndcToRasterCoord(p0.x, p0.y);
+        Vector2i vp1 = ndcToRasterCoord(p1.x, p1.y);
+        Vector2i vp2 = ndcToRasterCoord(p2.x, p2.y);
 
         raster.fillTri(vp0.x, vp0.y, vp1.x, vp1.y, vp2.x, vp2.y, 0xff00ff);
     }
 
-    private Vector2i viewportToRasterCoord(float x, float y) {
+    private Vector2i ndcToRasterCoord(float x, float y) {
         Vector2i result = new Vector2i();
 
         float halfWidth = raster.getWidth() * 0.5f;
@@ -170,16 +173,17 @@ public class SoftwareRenderer extends Application {
             Vector3f v1 = mesh.getVertices()[indecies[i+1]];
             Vector3f v2 = mesh.getVertices()[indecies[i+2]];
 
-            Matrix3f r = new Matrix3f().rotationXYZ(rotation, rotation, rotation);
+            Matrix3f r = new Matrix3f().rotationXYZ(0, rotation, (float)Math.toRadians(180.0));
             Vector3f p0 = v0.mul(r, new Vector3f()).mulProject(camera.getViewProjMatrix());
             Vector3f p1 = v1.mul(r, new Vector3f()).mulProject(camera.getViewProjMatrix());
             Vector3f p2 = v2.mul(r, new Vector3f()).mulProject(camera.getViewProjMatrix());
 
-//            thisizer.fillTri(
-//                    p0.x, p0.y, 0xff0000,
-//                    p1.x, p1.y, 0x00ff00,
-//                    p2.x, p2.y, 0x0000ff
-//            );
+            Vector2i vp0 = ndcToRasterCoord(p0.x, p0.y);
+            Vector2i vp1 = ndcToRasterCoord(p1.x, p1.y);
+            Vector2i vp2 = ndcToRasterCoord(p2.x, p2.y);
+
+            raster.fillTri(vp0.x, vp0.y, vp1.x, vp1.y, vp2.x, vp2.y, 0xff00ff);
+            raster.drawTri(vp0.x, vp0.y, vp1.x, vp1.y, vp2.x, vp2.y, 0x00ff23);
         }
     }
 

@@ -1,17 +1,13 @@
 package com.zeejfps.sr;
 
+import com.zeejfps.sr.rasterizer.Raster;
+
 import java.util.Arrays;
 
-public class Bitmap {
-
-    public final int width;
-    public final int height;
-    public final int[] pixels;
+public class Bitmap extends Raster {
 
     private Bitmap(int[] pixels, int width, int height) {
-        this.width = width;
-        this.height = height;
-        this.pixels = pixels;
+        super(pixels, width, height);
     }
 
     public static Bitmap create(int width, int height) {
@@ -33,7 +29,7 @@ public class Bitmap {
     }
 
     public static Bitmap copyOf(Bitmap bitmap) {
-        return copyOf(bitmap.pixels, bitmap.width, bitmap.height);
+        return copyOf(bitmap.colorBuffer, bitmap.width, bitmap.height);
     }
 
 }
