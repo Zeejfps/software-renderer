@@ -59,16 +59,40 @@ public class Rasterizer {
         }
     }
 
-    public void drawHorizontalLine(int startX, int startY, int width, int color) {
-        int rasterIndex = startX + raster.width * startY;
+    public void drawHorizontalLine(int x, int y, int width, int color) {
+        if (y < 0 || y >= raster.height)
+            return;
+
+        if (x < 0) {
+            width += x;
+            x = 0;
+        }
+
+        if (x + width > raster.width) {
+            width = raster.width - x;
+        }
+
+        int rasterIndex = x + raster.width * y;
         for (int i = 0; i < width; i++) {
             raster.pixels[rasterIndex] = color;
             rasterIndex++;
         }
     }
 
-    public void drawVerticalLine(int startX, int startY, int height, int color) {
-        int rasterIndex = startX + raster.width * startY;
+    public void drawVerticalLine(int x, int y, int height, int color) {
+        if (x < 0 || x >= raster.width)
+            return;
+
+        if (y < 0) {
+            height += y;
+            y = 0;
+        }
+
+        if (y + height > raster.height) {
+            height = raster.height - y;
+        }
+
+        int rasterIndex = x + raster.width * y;
         for (int i = 0; i < height; i++) {
             raster.pixels[rasterIndex] = color;
             rasterIndex += raster.width;
@@ -101,6 +125,8 @@ public class Rasterizer {
     }
 
     public void drawPixel(int x, int y, int color) {
+        if (x < 0 || y < 0 || x >= raster.width || y >= raster.height)
+            return;
         raster.pixels[x + raster.width * y] = color;
     }
 

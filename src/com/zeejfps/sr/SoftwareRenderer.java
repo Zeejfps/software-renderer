@@ -24,7 +24,7 @@ public class SoftwareRenderer extends Application {
     public SoftwareRenderer() {
         Config config = new Config();
         config.fullscreen = false;
-        config.renderScale = 0.3f;
+        config.renderScale = 0.5f;
         display = new AwtDisplay(config);
         BufferedImage img = display.getFrameBuffer();
         int[] pixels = ((DataBufferInt)img.getRaster().getDataBuffer()).getData();
@@ -63,9 +63,13 @@ public class SoftwareRenderer extends Application {
         //rasterizer.drawHorizontalLine(2, 2, 2, 0xff00ff);
         //rasterizer.drawVerticalLine(2, 2, 2, 0xff00ff);
 
-        rasterizer.fillRect(100, 25, 400, 320, 0xff0000);
+        //rasterizer.fillRect(100, 25, 400, 320, 0xff0000);
 
-        //rasterizer.fillRect(5, 5, 20, 20, 0xff00ff);
+        rasterizer.drawRect(4, 4, 22, 22, 0xffff00);
+
+        //rasterizer.drawHorizontalLine(-15, 25, 10, 0xff0000);
+
+        rasterizer.fillRect(5, 5, 20, 20, 0xff00ff);
 
         //rasterizer.drawLine(15, 10, 15, 40, 0xffff00);
 
