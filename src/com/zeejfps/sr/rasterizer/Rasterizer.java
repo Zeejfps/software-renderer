@@ -107,19 +107,38 @@ public class Rasterizer {
             drawHorizontalLine(startX, startY, endX - startX, color);
         }
         else {
+            int d = 0;
 
-            int dx = endX - startX;
-            int dy = endY - startY;
-            int d = 2 * dy - dx;
+            int dx = Math.abs(endX - startX);
+            int dy = Math.abs(endY - startY);
+
+            int dx2 = 2 * dx; // slope scaling factors to
+            int dy2 = 2 * dy; // avoid floating point
+
+            int ix = startX < endX ? 1 : -1; // increment direction
+            int iy = startY < endY ? 1 : -1;
+
+            int x = startX;
             int y = startY;
 
-            for (int x = startX; x <= endX; x++) {
-                drawPixel(x, y, color);
-                if (d > 0) {
-                    y += 1;
-                    d -= 2 * dx;
+            if (dx >= dy) {
+                for (; x < endX; x += ix) {
+                    drawPixel(x, y, color);
+                    d += dy2;
+                    if (d > dx) {
+                        y += iy;
+                        d -= dx2;
+                    }
                 }
-                d += 2 * dy;
+            } else {
+                for (; y < endY; y += iy) {
+                    drawPixel(x, y, color);
+                    d += dx2;
+                    if (d > dy) {
+                        x += ix;
+                        d -= dy2;
+                    }
+                }
             }
         }
     }

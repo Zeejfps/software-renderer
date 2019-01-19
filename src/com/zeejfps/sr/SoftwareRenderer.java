@@ -71,6 +71,8 @@ public class SoftwareRenderer extends Application {
 
         rasterizer.fillRect(5, 5, 20, 20, 0xff00ff);
 
+        rasterizer.drawLine(40, 40, 41, 65, 0xff2233);
+
         //rasterizer.drawLine(15, 10, 15, 40, 0xffff00);
 
         //rasterizer.drawLine(25, 25, 180, 240, 0xffff00);
