@@ -9,7 +9,7 @@ public class Rasterizer3D extends Rasterizer {
         super(raster);
     }
 
-    private Vector2i viewportToRasterCoord(float x, float y) {
+    public Vector2i viewportToRasterCoord(float x, float y) {
         Vector2i result = new Vector2i();
 
         float halfWidth = raster.width * 0.5f;
@@ -20,25 +20,28 @@ public class Rasterizer3D extends Rasterizer {
         return result;
     }
 
-    /*
-     * A lot of drawing code comes of this article https://fgiesen.wordpress.com/2013/02/06/the-barycentric-conspirac/
-     */
     public void fillTriangle(
         float x0, float y0, int c0,
         float x1, float y1, int c1,
         float x2, float y2, int c2
-    )
-    {
-
+    ) {
         Vector2i v0 = viewportToRasterCoord(x0, y0);
         Vector2i v1 = viewportToRasterCoord(x1, y1);
         Vector2i v2 = viewportToRasterCoord(x2, y2);
 
+        fillTriangle(v0.x, v0.y, c0, v1.x, v1.y, c1, v2.x, v2.y, c2);
+    }
+
+    /*
+     * A lot of drawing code comes of this article https://fgiesen.wordpress.com/2013/02/06/the-barycentric-conspirac/
+     */
+    public void fillTriangle(int x0, int y0, int c0, int x1, int y1, int c1, int x2, int y2, int c2)
+    {
         // Compute triangle bounding box
-        int minX = ZMath.min3(v0.x, v1.x, v2.x);
-        int minY = ZMath.min3(v0.y, v1.y, v2.y);
-        int maxX = ZMath.max3(v0.x, v1.x, v2.x);
-        int maxY = ZMath.max3(v0.y, v1.y, v2.y);
+        int minX = ZMath.min3(x0, x1, x2);
+        int minY = ZMath.min3(y0, y1, y2);
+        int maxX = ZMath.max3(x0, x1, x2);
+        int maxY = ZMath.max3(y0, y1, y2);
 
         // Clip against screen bounds
         minX = Math.max(minX, 0);
@@ -47,32 +50,31 @@ public class Rasterizer3D extends Rasterizer {
         maxY = Math.min(maxY, raster.height - 1);
 
         // Triangle setup
-        int A01 = v0.y - v1.y, B01 = v1.x - v0.x;
-        int A12 = v1.y - v2.y, B12 = v2.x - v1.x;
-        int A20 = v2.y - v0.y, B20 = v0.x - v2.x;
+        int A01 = y0 - y1, B01 = x1 - x0;
+        int A12 = y1 - y2, B12 = x2 - x1;
+        int A20 = y2 - y0, B20 = x0 - x2;
 
         // Barycentric coordinates at minX/minY corner
-        Vector2i p = new Vector2i(minX, minY);
-        int w0_row = edge(v1, v2, p);
-        int w1_row = edge(v2, v0, p);
-        int w2_row = edge(v0, v1, p);
+        int w0_row = edge(x1, y1, x2, y2, minX, minY);
+        int w1_row = edge(x2, y2, x0, y0, minX, minY);
+        int w2_row = edge(x0, y0, x1, y1, minX, minY);
 
-        float area = edge(v0, v1, v2); // area of the triangle multiplied by 2
+        float area = edge(x0, y0, x1, y1, x2, y2); // area of the triangle multiplied by 2
         if (area == 0)
             return;
 
         // Rasterize
-        for (p.y = minY; p.y <= maxY; p.y++) {
+        for (int i = minY; i <= maxY; i++) {
 
             // To save on a couple multiplications
-            int index = minX + p.y * raster.width;
+            int index = minX + i * raster.width;
 
             // Barycentric coordinates at start of row
             int w0 = w0_row;
             int w1 = w1_row;
             int w2 = w2_row;
 
-            for (p.x = minX; p.x <= maxX; p.x++, index++) {
+            for (int j = minX; j <= maxX; j++, index++) {
                 // Determine barycentric coordinates
 
                 // If p is on or inside all edges, render pixel.
@@ -86,7 +88,7 @@ public class Rasterizer3D extends Rasterizer {
                     int g = (int)(wr * ((c0 & 0x00ff00) >>  8) + wg * ((c1 & 0x00ff00) >>  8) + wb * ((c2 & 0x00ff00) >>  8));
                     int b = (int)(wr * ((c0 & 0x0000ff)) + wg * ((c1 & 0x0000ff)) + wb * ((c2 & 0x0000ff)));
                     int color = (r << 16) | (g << 8) | b;
-                    raster.pixels[p.x + p.y * raster.width] = color;
+                    raster.pixels[index] = color;
                 }
 
                 // One step to the right
@@ -103,8 +105,8 @@ public class Rasterizer3D extends Rasterizer {
 
     }
 
-    private int edge(Vector2i a, Vector2i b, Vector2i c) {
-        return (b.x-a.x)*(c.y-a.y) - (b.y-a.y)*(c.x-a.x);
+    private int edge(int x0, int y0, int x1, int y1, int x2, int y2) {
+        return (x1-x0)*(y2-y0) - (y1-y0)*(x2-x0);
     }
 
 }
