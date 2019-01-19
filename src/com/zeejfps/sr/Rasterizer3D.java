@@ -2,30 +2,26 @@ package com.zeejfps.sr;
 
 import org.joml.Vector2i;
 
-public class SimpleRasterizer implements Rasterizer {
+public class Rasterizer3D extends Rasterizer {
 
-    private Bitmap colorBuffer;
-
-    public SimpleRasterizer(Bitmap colorBuffer) {
-        this.colorBuffer = colorBuffer;
+    public Rasterizer3D(Bitmap raster) {
+        super(raster);
     }
 
     private Vector2i viewportToRasterCoord(float x, float y) {
         Vector2i result = new Vector2i();
 
-        float halfWidth = colorBuffer.width * 0.5f;
-        float halfHeight = colorBuffer.height * 0.5f;
+        float halfWidth = raster.width * 0.5f;
+        float halfHeight = raster.height * 0.5f;
 
         result.x = (int)(halfWidth + halfWidth * x + 0.5f);
         result.y = (int)(halfHeight + halfHeight * y + 0.5f);
         return result;
     }
 
-
     /*
-     * A lot of drawing code comes from this article https://fgiesen.wordpress.com/2013/02/06/the-barycentric-conspirac/
+     * A lot of drawing code comes of this article https://fgiesen.wordpress.com/2013/02/06/the-barycentric-conspirac/
      */
-    @Override
     public void fillTriangle(
         float x0, float y0, int c0,
         float x1, float y1, int c1,
@@ -46,8 +42,8 @@ public class SimpleRasterizer implements Rasterizer {
         // Clip against screen bounds
         minX = Math.max(minX, 0);
         minY = Math.max(minY, 0);
-        maxX = Math.min(maxX, colorBuffer.width - 1);
-        maxY = Math.min(maxY, colorBuffer.height - 1);
+        maxX = Math.min(maxX, raster.width - 1);
+        maxY = Math.min(maxY, raster.height - 1);
 
         // Triangle setup
         int A01 = v0.y - v1.y, B01 = v1.x - v0.x;
@@ -68,7 +64,7 @@ public class SimpleRasterizer implements Rasterizer {
         for (p.y = minY; p.y <= maxY; p.y++) {
 
             // To save on a couple multiplications
-            int index = minX + p.y * colorBuffer.width;
+            int index = minX + p.y * raster.width;
 
             // Barycentric coordinates at start of row
             int w0 = w0_row;
@@ -89,7 +85,7 @@ public class SimpleRasterizer implements Rasterizer {
                     int g = (int)(wr * ((c0 & 0x00ff00) >>  8) + wg * ((c1 & 0x00ff00) >>  8) + wb * ((c2 & 0x00ff00) >>  8));
                     int b = (int)(wr * ((c0 & 0x0000ff)) + wg * ((c1 & 0x0000ff)) + wb * ((c2 & 0x0000ff)));
                     int color = (r << 16) | (g << 8) | b;
-                    renderPixel(p.x + p.y * colorBuffer.width, color);
+                    renderPixel(p.x + p.y * raster.width, color);
                 }
 
                 // One step to the right
@@ -116,10 +112,6 @@ public class SimpleRasterizer implements Rasterizer {
 
     private int edge(Vector2i a, Vector2i b, Vector2i c) {
         return (b.x-a.x)*(c.y-a.y) - (b.y-a.y)*(c.x-a.x);
-    }
-
-    private void renderPixel(int index, int color) {
-        colorBuffer.pixels[index] = color;
     }
 
 }

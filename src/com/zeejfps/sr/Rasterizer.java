@@ -1,7 +1,23 @@
 package com.zeejfps.sr;
 
-public interface Rasterizer {
-    void fillTriangle(float x0, float y0, int c1,
-                      float x1, float y1, int c2,
-                      float x2, float y2, int c3);
+public class Rasterizer {
+
+    protected Bitmap raster;
+
+    public Rasterizer(Bitmap raster) {
+        this.raster = raster;
+    }
+
+    public void setRaster(Bitmap bitmap) {
+        this.raster = raster;
+    }
+
+    public Bitmap getRaster() {
+        return raster;
+    }
+
+    protected void renderPixel(int index, int color) {
+        raster.pixels[index] = color;
+    }
+
 }

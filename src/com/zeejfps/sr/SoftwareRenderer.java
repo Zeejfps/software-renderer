@@ -3,13 +3,15 @@ package com.zeejfps.sr;
 import com.zeejfps.sr.utils.OBJImporter;
 import org.joml.*;
 
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.io.IOException;
 import java.util.Arrays;
 
 public class SoftwareRenderer extends Application {
 
     private final AwtDisplay display;
-    private final Rasterizer rasterizer;
+    private final Rasterizer3D rasterizer;
     private final Camera camera;
 
     private final Bitmap colorBuffer;
@@ -18,12 +20,14 @@ public class SoftwareRenderer extends Application {
 
     public SoftwareRenderer() {
         Config config = new Config();
-        config.fullscreen = true;
+        config.fullscreen = false;
         config.renderScale = 0.25f;
         display = new AwtDisplay(config);
-        this.colorBuffer = Bitmap.attach(display.getFrameBuffer(), true);
+        BufferedImage img = display.getFrameBuffer();
+        int[] pixels = ((DataBufferInt)img.getRaster().getDataBuffer()).getData();
+        this.colorBuffer = Bitmap.of(pixels, img.getWidth(), img.getHeight());
 
-        rasterizer = new SimpleRasterizer(this.colorBuffer);
+        rasterizer = new Rasterizer3D(this.colorBuffer);
         camera = new Camera(65f, (float)display.getWidth() / display.getHeight(), 0.01f, 100f);
 
         try {
@@ -70,16 +74,16 @@ public class SoftwareRenderer extends Application {
                 -0.5f, -0.8f, 0xf430ff,
                 0.1f, 0.3f, 0xff055f,
                 -0.9f, 0.2f, 0xf230ff
-        );
+        );*/
 
         rasterizer.fillTriangle(
                 -0.2f, -0.1f, 0xff00ff,
                 0.23f, 1.2f, 0xff00ff,
                 -0.2f, 0.9f, 0x3300ff
-        );*/
+        );
 
-        /*renderTriangle(vertices[0], vertices[1], vertices[2]);
-        renderTriangle(vertices[0], vertices[2], vertices[1]);*/
+       // renderTriangle(vertices[0], vertices[1], vertices[2]);
+       // renderTriangle(vertices[0], vertices[2], vertices[1]);
 
         renderMesh(car);
 
