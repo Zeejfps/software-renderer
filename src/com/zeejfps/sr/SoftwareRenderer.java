@@ -18,14 +18,14 @@ public class SoftwareRenderer extends Application {
 
     public SoftwareRenderer() {
         Config config = new Config();
-        config.fullscreen = false;
-        config.renderScale = 0.9f;
+        config.fullscreen = true;
+        config.renderScale = 1f;
 
         raster = new Raster3D(640, 240);
 
         display = new AwtDisplay(config, raster);
 
-        camera = new Camera(65f, (float)display.getWidth() / display.getHeight(), 0.01f, 100f);
+        camera = new Camera(90f, (float)display.getWidth() / display.getHeight(), 0.01f, 1000f);
 
         try {
             car = OBJImporter.load("res/car.obj");
@@ -53,7 +53,7 @@ public class SoftwareRenderer extends Application {
     @Override
     public void render() {
 
-        Arrays.fill(raster.getColorBuffer(), 0x002233);
+        raster.clearColorBuffer(0x002233);
 
         //thisizer.drawHorizontalLine(2, 2, 2, 0xff00ff);
         //thisizer.drawVerticalLine(2, 2, 2, 0xff00ff);
@@ -72,9 +72,9 @@ public class SoftwareRenderer extends Application {
 
         //thisizer.drawLine(25, 25, 180, 240, 0xffff00);
 
-        raster.drawTri(10, 10, 50, 30, 15, 20, 0xff2244);
-
-        raster.drawLine(20, 20, 5, 5, 0xff00ff);
+//        raster.drawTri(10, 10, 50, 30, 15, 20, 0xff2244);
+//
+//        raster.drawLine(20, 20, 5, 5, 0xff00ff);
 
         /*thisizer.fillTriangleFast(
                 0.5f, 0.1f, 0xff0000,
@@ -94,16 +94,16 @@ public class SoftwareRenderer extends Application {
                 -0.9f, 0.2f, 0xf230ff
         );*/
 
-        raster.fillTri(40, 40, 90, 40, 20, 185, 0xff00ff);
-
-        raster.fillTri(120, 40, 90, 70, 100, 70, 0xff00ff);
-
-        raster.fillTri(150, 155, 170, 160, 140, 140, 0xff2233);
+//        raster.fillTri(40, 40, 90, 40, 20, 185, 0xff00ff);
+//
+//        raster.fillTri(120, 40, 90, 70, 100, 70, 0xff00ff);
+//
+//        raster.fillTri(150, 155, 170, 160, 140, 140, 0xff2233);
 
        // renderTriangle(vertices[0], vertices[1], vertices[2]);
        // renderTriangle(vertices[0], vertices[2], vertices[1]);
 
-        renderMesh(car);
+        //renderMesh(car);
 
         renderMesh(cube);
 
@@ -178,23 +178,31 @@ public class SoftwareRenderer extends Application {
             Vector3f v1 = mesh.getVertices()[indecies[i+1]];
             Vector3f v2 = mesh.getVertices()[indecies[i+2]];
 
-            Matrix3f r = new Matrix3f().rotationXYZ(0, rotation, (float)Math.toRadians(180.0));
-            Vector3f p0 = v0.mul(r, new Vector3f()).mulProject(camera.getViewProjMatrix());
-            Vector3f p1 = v1.mul(r, new Vector3f()).mulProject(camera.getViewProjMatrix());
-            Vector3f p2 = v2.mul(r, new Vector3f()).mulProject(camera.getViewProjMatrix());
+            Matrix3f r = new Matrix3f().rotationXYZ(rotation, 0, rotation);
+            Vector3f p0 = v0.mul(r, new Vector3f()).add(0, 0, 3f);
+            Vector3f p1 = v1.mul(r, new Vector3f()).add(0, 0, 3f);
+            Vector3f p2 = v2.mul(r, new Vector3f()).add(0, 0, 3f);
 
-            Vector3f normal = p1.sub(p0, new Vector3f()).cross(p2.sub(p0, new Vector3f()));
-            float v = normal.dot(p0);
-            if (v <= 0.0f) {
-                //return;
+            Vector3f line1 = p1.sub(p0, new Vector3f());
+            Vector3f line2 = p2.sub(p0, new Vector3f());
+            Vector3f normal = line1.cross(line2, new Vector3f()).normalize();
+            float v = normal.dot(new Vector3f(0, 0, 0).sub(p0));
+
+            //v = new Vector3f(0, 0, -1f).dot(normal) - v;*/
+            if (v < 0) {
+                continue;
             }
+
+            p0.mulProject(camera.getViewProjMatrix());
+            p1.mulProject(camera.getViewProjMatrix());
+            p2.mulProject(camera.getViewProjMatrix());
 
             Vector2i vp0 = ndcToRasterCoord(p0.x, p0.y);
             Vector2i vp1 = ndcToRasterCoord(p1.x, p1.y);
             Vector2i vp2 = ndcToRasterCoord(p2.x, p2.y);
 
-            raster.fillTri(vp0.x, vp0.y, vp1.x, vp1.y, vp2.x, vp2.y, 0xffffff);
-            raster.drawTri(vp0.x, vp0.y, vp1.x, vp1.y, vp2.x, vp2.y, 0x00ff23);
+            raster.fillTri(vp0.x, vp0.y, vp1.x, vp1.y, vp2.x, vp2.y, 0xff0045);
+            raster.drawTri(vp0.x, vp0.y, vp1.x, vp1.y, vp2.x, vp2.y, 0x0);
         }
     }
 

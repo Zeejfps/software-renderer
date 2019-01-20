@@ -1,5 +1,7 @@
 package com.zeejfps.sr.rasterizer;
 
+import java.util.Arrays;
+
 public class Raster {
 
     protected int[] colorBuffer;
@@ -26,6 +28,10 @@ public class Raster {
 
     public int getHeight() {
         return height;
+    }
+
+    public void clearColorBuffer(int color) {
+        Arrays.fill(colorBuffer, color);
     }
 
     public void drawCircle(int centerX, int centerY, int radius, int color) {
@@ -122,15 +128,23 @@ public class Raster {
 
             if (startX < 0)
                 startX = 0;
+            else if (startX >= this.width)
+                startX = this.width - 1;
 
-            if (endX > this.width)
-                endX = this.width;
+            if (endX >= this.width)
+                endX = this.width-1;
+            else if (endX < 0)
+                endX = 0;
 
             if (startY < 0)
                 startY = 0;
+            else if (startY >= this.height)
+                startY = this.height-1;
 
-            if (endY > this.height)
-                endY = this.height;
+            if (endY >= this.height)
+                endY = this.height-1;
+            else if (endY < 0)
+                endY = 0;
 
             int d = 0;
 

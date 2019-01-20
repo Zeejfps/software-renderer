@@ -17,10 +17,10 @@ public class Camera {
                     0f, 0f, 0f,
                     0f, 1f, 0f);
         viewProjMatrix = new Matrix4f()
-                .perspective((float) Math.toRadians(fov), aspect, zNear, zFar)
-                .lookAt(0f, 0f, 10f,
+                .perspective((float) Math.toRadians(fov), aspect, zNear, zFar);
+                /*.lookAt(0f, 0f, 10f,
                         0f, 0f, 0f,
-                        0f, 1f, 0f);
+                        0f, 1f, 0f);*/
 
     }
 
