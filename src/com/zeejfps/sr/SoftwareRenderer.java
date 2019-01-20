@@ -6,7 +6,6 @@ import org.joml.*;
 
 import java.io.IOException;
 import java.lang.Math;
-import java.util.Arrays;
 
 public class SoftwareRenderer extends Application {
 
@@ -59,6 +58,7 @@ public class SoftwareRenderer extends Application {
     public void render() {
 
         raster.clearColorBuffer(0x002233);
+        raster.clearDepthBuffer();
 
         //thisizer.drawHorizontalLine(2, 2, 2, 0xff00ff);
         //thisizer.drawVerticalLine(2, 2, 2, 0xff00ff);
@@ -81,19 +81,19 @@ public class SoftwareRenderer extends Application {
 //
 //        raster.drawLine(20, 20, 5, 5, 0xff00ff);
 
-        /*thisizer.fillTriangleFast(
+        /*thisizer.fillTriFast(
                 0.5f, 0.1f, 0xff0000,
                 0.8f, 0.5f, 0x00ff00,
                 0.2f, 0.9f, 0x0000ff
         );
 
-        thisizer.fillTriangleFast(
+        thisizer.fillTriFast(
                 0f, -0.5f, 0xff00ff,
                 0.5f, 0.5f, 0xff00ff,
                 -0.3f, 0.7f, 0xff00ff
         );
 
-        thisizer.fillTriangleFast(
+        thisizer.fillTriFast(
                 -0.5f, -0.8f, 0xf430ff,
                 0.1f, 0.3f, 0xff055f,
                 -0.9f, 0.2f, 0xf230ff
@@ -186,9 +186,9 @@ public class SoftwareRenderer extends Application {
             Vector3f v2 = mesh.getVertices()[indecies[i+2]];
 
             Matrix3f rot = new Matrix3f().rotationXYZ(0, rotation, 0);
-            Vector3f p0 = v0.mul(rot, new Vector3f()).add(0, -0.11f, 0.17f);
-            Vector3f p1 = v1.mul(rot, new Vector3f()).add(0, -0.11f, 0.17f);
-            Vector3f p2 = v2.mul(rot, new Vector3f()).add(0, -0.11f, 0.17f);
+            Vector3f p0 = v0.mul(rot, new Vector3f()).add(0, -0.12f, 0.16f);
+            Vector3f p1 = v1.mul(rot, new Vector3f()).add(0, -0.12f, 0.16f);
+            Vector3f p2 = v2.mul(rot, new Vector3f()).add(0, -0.12f, 0.16f);
 
             Vector3f line1 = p1.sub(p0, new Vector3f());
             Vector3f line2 = p2.sub(p0, new Vector3f());
@@ -210,16 +210,17 @@ public class SoftwareRenderer extends Application {
 
             int color = ((r&0xff)<<16)|((g&0xff)<<8)|(b&0xff);
 
-            p0.mulProject(camera.getViewProjMatrix());
-            p1.mulProject(camera.getViewProjMatrix());
-            p2.mulProject(camera.getViewProjMatrix());
+            Vector3f pr0 = p0.mulProject(camera.getViewProjMatrix(), new Vector3f());
+            Vector3f pr1 = p1.mulProject(camera.getViewProjMatrix(), new Vector3f());
+            Vector3f pr2 = p2.mulProject(camera.getViewProjMatrix(), new Vector3f());
 
-            Vector2i vp0 = ndcToRasterCoord(p0.x, p0.y);
-            Vector2i vp1 = ndcToRasterCoord(p1.x, p1.y);
-            Vector2i vp2 = ndcToRasterCoord(p2.x, p2.y);
+            Vector2i vp0 = ndcToRasterCoord(pr0.x, pr0.y);
+            Vector2i vp1 = ndcToRasterCoord(pr1.x, pr1.y);
+            Vector2i vp2 = ndcToRasterCoord(pr2.x, pr2.y);
 
-            raster.fillTri(vp0.x, vp0.y, vp1.x, vp1.y, vp2.x, vp2.y, color);
-            //raster.drawTri(vp0.x, vp0.y, vp1.x, vp1.y, vp2.x, vp2.y, 0x0);
+//            raster.fillTri(vp0.x, vp0.y, vp1.x, vp1.y, vp2.x, vp2.y, color);
+            raster.fillTriFast(vp2.x, vp2.y, p2.z, color, vp1.x, vp1.y, p1.z, color, vp0.x, vp0.y, p0.z, color);
+            //raster.drawTri(vp0.x, vp0.y, vp1.x, vp1.y, vp2.x, vp2.y, 0x233ff3);
         }
     }
 

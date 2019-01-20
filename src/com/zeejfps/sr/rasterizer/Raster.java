@@ -49,6 +49,14 @@ public class Raster {
         drawVerticalLine(x + width-1, y, height, color);
     }
 
+    public void drawPoly(int[] xs, int[] ys, int color, boolean loop) {
+        for (int i = 0; i < xs.length - 1; i++) {
+            drawLine(xs[i], ys[i], xs[i+1], ys[i+1], color);
+        }
+        if (loop)
+            drawLine(xs[xs.length-1], ys[ys.length-1], xs[0], ys[0], color);
+    }
+
     public void fillRect(int x, int y, int width, int height, int color) {
         if (x < 0) {
             width += x;
@@ -107,11 +115,11 @@ public class Raster {
         }
 
         if (y + height > this.height) {
-            height = this.height - y - 1;
+            height = this.height - y;
         }
 
         int thisIndex = x + this.width * y;
-        for (int i = 0; i <= height; i++) {
+        for (int i = 0; i < height; i++) {
             this.colorBuffer[thisIndex] = color;
             thisIndex += this.width;
         }

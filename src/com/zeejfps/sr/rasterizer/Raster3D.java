@@ -18,6 +18,10 @@ public class Raster3D extends Raster {
         return depthBuffer;
     }
 
+    public void clearDepthBuffer() {
+        Arrays.fill(depthBuffer, Float.MAX_VALUE);
+    }
+
     public void drawTri(int x0, int y0, int x1, int y1, int x2, int y2, int color) {
         drawLine(x0, y0, x1, y1, color);
         drawLine(x1, y1, x2, y2, color);
@@ -27,7 +31,11 @@ public class Raster3D extends Raster {
     /*
      * A lot of drawing code comes of this article https://fgiesen.wordpress.com/2013/02/06/the-barycentric-conspirac/
      */
-    public void fillTriangleFast(int x0, int y0, int c0, int x1, int y1, int c1, int x2, int y2, int c2) {
+    public void fillTriFast(
+            int x0, int y0, float z0, int c0,
+            int x1, int y1, float z1, int c1,
+            int x2, int y2, float z2, int c2) {
+
         // area of the triangle multiplied by 2
         float area = edge(x0, y0, x1, y1, x2, y2);
         if (area == 0)
@@ -44,6 +52,47 @@ public class Raster3D extends Raster {
         minY = Math.max(minY, 0);
         maxX = Math.min(maxX, this.width - 1);
         maxY = Math.min(maxY, this.height - 1);
+
+        /*
+        // Check 8x8 chunks
+        boolean shouldDraw = false;
+        int block = 8;
+
+        for (int i = minY; i <= maxY - block; i+=block) {
+
+            for (int j = minX; j <= maxX - block; j+=block) {
+
+                // Get the coordinates for the top left most pixel
+                int w0_tl = edge(x1, y1, x2, y2, j, i);
+                int w1_tl = edge(x2, y2, x0, y0, j, i);
+                int w2_tl = edge(x0, y0, x1, y1, j, i);
+
+                shouldDraw |= (w0_tl | w1_tl | w2_tl) >= 0;
+
+                int w0_tr = edge(x1, y1, x2, y2, j+block, i);
+                int w1_tr = edge(x2, y2, x0, y0, j+block, i);
+                int w2_tr = edge(x0, y0, x1, y1, j+block, i);
+
+                shouldDraw |= (w0_tr | w1_tr | w2_tr) >=0;
+
+                int w0_bl = edge(x1, y1, x2, y2, j, i+block);
+                int w1_bl = edge(x2, y2, x0, y0, j, i+block);
+                int w2_bl = edge(x0, y0, x1, y1, j, i+block);
+
+                shouldDraw |= (w0_bl | w1_bl | w2_bl) >=0;
+
+                int w0_br = edge(x1, y1, x2, y2, j+block, i+block);
+                int w1_br = edge(x2, y2, x0, y0, j+block, i+block);
+                int w2_br = edge(x0, y0, x1, y1, j+block, i+block);
+
+                shouldDraw |= (w0_br | w1_br | w2_br) >=0;
+            }
+
+        }
+
+        if (!shouldDraw)
+            return;
+        */
 
         // Triangle setup
         int A01 = y0 - y1, B01 = x1 - x0;
@@ -75,11 +124,16 @@ public class Raster3D extends Raster {
                     float wg = w1 / area;
                     float wb = w2 / area;
 
-                    int r = (int)(wr * ((c0 & 0xff0000) >> 16) + wg * ((c1 & 0xff0000) >> 16) + wb * ((c2 & 0xff0000) >> 16));
-                    int g = (int)(wr * ((c0 & 0x00ff00) >>  8) + wg * ((c1 & 0x00ff00) >>  8) + wb * ((c2 & 0x00ff00) >>  8));
-                    int b = (int)(wr * ((c0 & 0x0000ff)) + wg * ((c1 & 0x0000ff)) + wb * ((c2 & 0x0000ff)));
-                    int color = (r << 16) | (g << 8) | b;
-                    this.colorBuffer[index] = color;
+                    float z = z0 * wr + z1 * wg + z2 * wb;
+
+                    if (z < depthBuffer[index]) {
+                        depthBuffer[index] = z;
+                        int r = (int)(wr * ((c0 & 0xff0000) >> 16) + wg * ((c1 & 0xff0000) >> 16) + wb * ((c2 & 0xff0000) >> 16));
+                        int g = (int)(wr * ((c0 & 0x00ff00) >>  8) + wg * ((c1 & 0x00ff00) >>  8) + wb * ((c2 & 0x00ff00) >>  8));
+                        int b = (int)(wr * ((c0 & 0x0000ff)) + wg * ((c1 & 0x0000ff)) + wb * ((c2 & 0x0000ff)));
+                        int color = (r << 16) | (g << 8) | b;
+                        this.colorBuffer[index] = color;
+                    }
                 }
 
                 // One step to the right
