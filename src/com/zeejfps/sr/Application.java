@@ -41,17 +41,20 @@ public abstract class Application {
         lag += elapsed;
 
         while (lag >= NS_PER_UPDATE && skippedFrames < MAX_FRAMES_SKIP) {
-            update();
+            fixedUpdate();
             lag -= NS_PER_UPDATE;
             skippedFrames++;
         }
         skippedFrames = 0;
+        update(elapsed / NS_PER_SECOND);
         render();
     }
 
     protected abstract void init();
 
-    protected abstract void update();
+    protected abstract void fixedUpdate();
+
+    protected abstract void update(double dt);
 
     protected abstract void render();
 }
