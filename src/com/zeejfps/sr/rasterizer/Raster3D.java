@@ -167,16 +167,16 @@ public class Raster3D extends Raster {
 
             float a = (vy1 - vy0) / (float)(vy2 - vy0);
 
-            int vix = (int)(vx0 + (vx2 - vx0) * a + 0.5f);
-            int viy = (int)(vy0 + (vy2 - vy0) * a + 0.5f);
+            int vx4 = (int)(vx0 +  a * (vx2 - vx0));
+            int vy4 = vy1;
 
-            if (vx1 < vix) {
-                fillFlatBottomTri(vx0, vy0, vx1, vy1, vix, viy, color);
-                fillFlatTopTri(vx1, vy1, vix, viy, vx2, vy2, color);
+            if (vx1 < vx4) {
+                fillFlatBottomTri(vx0, vy0, vx1, vy1, vx4, vy4, color);
+                fillFlatTopTri(vx1, vy1, vx4, vy4, vx2, vy2, color);
             }
             else {
-                fillFlatBottomTri(vx0, vy0, vix, viy, vx1, vy1, color);
-                fillFlatTopTri(vix, viy, vx1, vy1, vx2, vy2, color);
+                fillFlatBottomTri(vx0, vy0, vx4, vy4, vx1, vy1, color);
+                fillFlatTopTri(vx4, vy4, vx1, vy1, vx2, vy2, color);
             }
 
         }
@@ -189,7 +189,20 @@ public class Raster3D extends Raster {
 
     private void fillFlatBottomTri(int x0, int y0, int x1, int y1, int x2, int y2, int color) {
 
-        double m0 = (x1 - x0) / (double)(y1 - y0);
+        float invslope1 = (x1 - x0) / (float)(y1 - y0);
+        float invslope2 = (x2 - x0) / (float)(y2 - y0);
+
+        float curx1 = x0;
+        float curx2 = x0;
+
+        for (int scanlineY = y0; scanlineY <= y1; scanlineY++)
+        {
+            drawLine((int)curx1, scanlineY, (int)curx2, scanlineY, color);
+            curx1 += invslope1;
+            curx2 += invslope2;
+        }
+
+        /*double m0 = (x1 - x0) / (double)(y1 - y0);
         double m1 = (x2 - x0) / (double)(y2 - y0);
 
         int ys = (int) Math.ceil(y0 - 0.5);
@@ -208,19 +221,32 @@ public class Raster3D extends Raster {
                 colorBuffer[index] = color;
             }
 
-        }
+        }*/
 
     }
 
     private void fillFlatTopTri(int x0, int y0, int x1, int y1, int x2, int y2, int color) {
 
-        double m0 = (x2 - x0) / (double)(y2 - y0);
+        float invslope1 = (x2 - x0) / (float)(y2 - y0);
+        float invslope2 = (x2 - x1) / (float)(y2 - y1);
+
+        float curx1 = x2;
+        float curx2 = x2;
+
+        for (int scanlineY = y2; scanlineY > y0; scanlineY--)
+        {
+            drawLine((int)curx1, scanlineY, (int)curx2, scanlineY, color);
+            curx1 -= invslope1;
+            curx2 -= invslope2;
+        }
+
+        /*double m0 = (x2 - x0) / (double)(y2 - y0);
         double m1 = (x2 - x1) / (double)(y2 - y1);
 
         int ys = (int) Math.ceil(y0 - 0.5);
         int ye = (int) Math.ceil(y2 - 0.5);
 
-        for (int y = ys; y < ye; y++) {
+        for (int y = ys; y <= ye; y++) {
 
             double px0 = m0 * (y + 0.5 - y0) + x0;
             double px1 = m1 * (y + 0.5 - y1) + x1;
@@ -233,7 +259,7 @@ public class Raster3D extends Raster {
                 colorBuffer[index] = color;
             }
 
-        }
+        }*/
 
     }
 

@@ -21,14 +21,14 @@ public class SoftwareRenderer extends Application {
         config.fullscreen = false;
         config.renderScale = 1f;
 
-        raster = new Raster3D(320, 240);
+        raster = new Raster3D(640, 480);
 
         display = new AwtDisplay(config, raster);
 
         camera = new Camera(90f, (float)display.getWidth() / display.getHeight(), 0.01f, 1000f);
 
         try {
-            car = OBJImporter.load("res/car.obj");
+            car = OBJImporter.load("res/bunny.obj");
             cube = OBJImporter.load("res/cube.obj");
         } catch (IOException e) {
             e.printStackTrace();
@@ -108,9 +108,9 @@ public class SoftwareRenderer extends Application {
        // renderTriangle(vertices[0], vertices[1], vertices[2]);
        // renderTriangle(vertices[0], vertices[2], vertices[1]);
 
-        //renderMesh(car);
+        renderMesh(car);
 
-        renderMesh(cube);
+        //renderMesh(cube);
 
         fps++;
         if (System.currentTimeMillis() - startTime >= 1000) {
@@ -152,8 +152,8 @@ public class SoftwareRenderer extends Application {
         float halfWidth = raster.getWidth() * 0.5f;
         float halfHeight = raster.getHeight() * 0.5f;
 
-        result.x = (int)(halfWidth + halfWidth * x + 0.5f);
-        result.y = (int)(halfHeight + halfHeight * y + 0.5f);
+        result.x = (int)(halfWidth * (x + 1f) + 0.5f);
+        result.y = (int)(halfHeight * (y + 1f) + 0.5f);
         return result;
     }
 
@@ -185,10 +185,10 @@ public class SoftwareRenderer extends Application {
             Vector3f v1 = mesh.getVertices()[indecies[i+1]];
             Vector3f v2 = mesh.getVertices()[indecies[i+2]];
 
-            Matrix3f rot = new Matrix3f().rotationXYZ(rotation, 0, rotation);
-            Vector3f p0 = v0.mul(rot, new Vector3f()).add(0, 0, 3f);
-            Vector3f p1 = v1.mul(rot, new Vector3f()).add(0, 0, 3f);
-            Vector3f p2 = v2.mul(rot, new Vector3f()).add(0, 0, 3f);
+            Matrix3f rot = new Matrix3f().rotationXYZ(0, rotation, 0);
+            Vector3f p0 = v0.mul(rot, new Vector3f()).add(0, -0.11f, 0.17f);
+            Vector3f p1 = v1.mul(rot, new Vector3f()).add(0, -0.11f, 0.17f);
+            Vector3f p2 = v2.mul(rot, new Vector3f()).add(0, -0.11f, 0.17f);
 
             Vector3f line1 = p1.sub(p0, new Vector3f());
             Vector3f line2 = p2.sub(p0, new Vector3f());
@@ -202,13 +202,13 @@ public class SoftwareRenderer extends Application {
             }
 
             float lum = normal.dot(light);
+            if (lum < 0) lum = 0f;
 
-            int r = (int)(0xFF * lum + 0.5);
-            int g = (int)(0x00 * lum + 0.5);
-            int b = (int)(0x45 * lum + 0.5);
+            int r = (int)Math.ceil(0xF0 * lum + 0.5);
+            int g = (int)Math.ceil(0x01 * lum + 0.5);
+            int b = (int)Math.ceil(0x25 * lum + 0.5);
 
-            int color = (r << 16) + (g << 8) + b;
-            //int color = 0xff0045;
+            int color = ((r&0xff)<<16)|((g&0xff)<<8)|(b&0xff);
 
             p0.mulProject(camera.getViewProjMatrix());
             p1.mulProject(camera.getViewProjMatrix());
@@ -219,7 +219,7 @@ public class SoftwareRenderer extends Application {
             Vector2i vp2 = ndcToRasterCoord(p2.x, p2.y);
 
             raster.fillTri(vp0.x, vp0.y, vp1.x, vp1.y, vp2.x, vp2.y, color);
-            raster.drawTri(vp0.x, vp0.y, vp1.x, vp1.y, vp2.x, vp2.y, 0x0);
+            //raster.drawTri(vp0.x, vp0.y, vp1.x, vp1.y, vp2.x, vp2.y, 0x0);
         }
     }
 

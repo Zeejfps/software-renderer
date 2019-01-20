@@ -87,11 +87,11 @@ public class Raster {
         }
 
         if (x + width > this.width) {
-            width = this.width - x;
+            width = this.width - x - 1;
         }
 
         int thisIndex = x + this.width * y;
-        for (int i = 0; i < width; i++) {
+        for (int i = 0; i <= width; i++) {
             this.colorBuffer[thisIndex] = color;
             thisIndex++;
         }
@@ -107,11 +107,11 @@ public class Raster {
         }
 
         if (y + height > this.height) {
-            height = this.height - y;
+            height = this.height - y - 1;
         }
 
         int thisIndex = x + this.width * y;
-        for (int i = 0; i < height; i++) {
+        for (int i = 0; i <= height; i++) {
             this.colorBuffer[thisIndex] = color;
             thisIndex += this.width;
         }

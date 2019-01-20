@@ -31,21 +31,17 @@ public class AwtDisplay {
         drawingComponent.setFocusable(true);
         drawingComponent.setBackground(Color.BLACK);
 
-        int resolutionX, resolutionY;
         if (config.fullscreen) {
             frame.setUndecorated(true);
             device.setFullScreenWindow(frame);
             this.width = device.getDisplayMode().getWidth();
             this.height = device.getDisplayMode().getHeight();
-            resolutionX = (int)(width * config.renderScale + 0.5f);
-            resolutionY = (int)(height * config.renderScale + 0.5f);
         }
         else {
             this.width = config.windowWidth;
             this.height = config.windowHeight;
-            resolutionX = (int)(config.windowWidth * config.renderScale + 0.5f);
-            resolutionY = (int)(config.windowHeight * config.renderScale + 0.5f);
         }
+
         drawingComponent.setPreferredSize(new Dimension(this.width, this.height));
 
         frame.setContentPane(drawingComponent);
@@ -54,7 +50,6 @@ public class AwtDisplay {
         frame.pack();
         frame.setLocationRelativeTo(null);
 
-        //this.frameBuffer = new BufferedImage(resolutionX, resolutionY, BufferedImage.TYPE_INT_RGB);
         DataBufferInt dataBuffer = new DataBufferInt(raster.getColorBuffer(), raster.getColorBuffer().length);
         DirectColorModel colorModel = new DirectColorModel(32, 0xFF0000, 0xFF00, 0xFF);
         WritableRaster wr = java.awt.image.Raster.createWritableRaster(colorModel.createCompatibleSampleModel(raster.getWidth(), raster.getHeight()), dataBuffer, null);
