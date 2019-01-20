@@ -17,17 +17,19 @@ public class SoftwareRenderer extends Application {
 
     public SoftwareRenderer() {
         Config config = new Config();
+        config.windowWidth = 1024;
+        config.windowHeight = 576;
         config.fullscreen = false;
         config.renderScale = 1f;
 
-        raster = new Raster3D(640, 480);
+        raster = new Raster3D(1024, 576);
 
         display = new AwtDisplay(config, raster);
 
         camera = new Camera(90f, (float)display.getWidth() / display.getHeight(), 0.01f, 1000f);
 
         try {
-            car = OBJImporter.load("res/bunny.obj");
+            car = OBJImporter.load("res/Skotizo.obj");
             cube = OBJImporter.load("res/cube.obj");
         } catch (IOException e) {
             e.printStackTrace();
@@ -185,10 +187,10 @@ public class SoftwareRenderer extends Application {
             Vector3f v1 = mesh.getVertices()[indecies[i+1]];
             Vector3f v2 = mesh.getVertices()[indecies[i+2]];
 
-            Matrix3f rot = new Matrix3f().rotationXYZ(0, rotation, 0);
-            Vector3f p0 = v0.mul(rot, new Vector3f()).add(0, -0.12f, 0.16f);
-            Vector3f p1 = v1.mul(rot, new Vector3f()).add(0, -0.12f, 0.16f);
-            Vector3f p2 = v2.mul(rot, new Vector3f()).add(0, -0.12f, 0.16f);
+            Matrix3f rot = new Matrix3f().rotationXYZ(25, rotation, 0);
+            Vector3f p0 = v0.mul(rot, new Vector3f()).add(0, -5.12f, 10.16f);
+            Vector3f p1 = v1.mul(rot, new Vector3f()).add(0, -5.12f, 10.16f);
+            Vector3f p2 = v2.mul(rot, new Vector3f()).add(0, -5.12f, 10.16f);
 
             Vector3f line1 = p1.sub(p0, new Vector3f());
             Vector3f line2 = p2.sub(p0, new Vector3f());
