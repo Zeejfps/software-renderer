@@ -4,6 +4,7 @@ import com.google.common.eventbus.EventBus;
 import com.zeejfps.sr.awt.AwtDisplay;
 import com.zeejfps.sr.rasterizer.Raster3D;
 import com.zeejfps.sr.utils.OBJImporter;
+import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
 import java.awt.event.KeyEvent;
@@ -122,8 +123,11 @@ public class DemoApplication extends Application {
     protected void onRender() {
         renderer.clear(0x002233);
 
-        renderer.renderMesh(bunnyMesh, bunnyTransform);
-        renderer.renderMesh(planeMesh, new Transform());
+        Matrix4d mvp = new Matrix4d(camera.getProjMatrix());
+        mvp.mul(camera.getViewMatrix()).mul(bunnyTransform.getTransformationMatrix());
+
+        renderer.renderMesh(mvp, bunnyMesh);
+        renderer.renderMeshOld(planeMesh, new Transform());
 
         display.swapBuffers();
 
