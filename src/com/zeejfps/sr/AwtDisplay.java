@@ -56,6 +56,10 @@ public class AwtDisplay {
         this.frameBuffer = new BufferedImage(colorModel, wr, false, new Hashtable<>());
     }
 
+    public Component getComponent() {
+        return drawingComponent;
+    }
+
     public void show() {
         frame.setVisible(true);
     }

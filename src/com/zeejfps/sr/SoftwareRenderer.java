@@ -1,9 +1,11 @@
 package com.zeejfps.sr;
 
+import com.google.common.eventbus.EventBus;
 import com.zeejfps.sr.rasterizer.Raster3D;
 import com.zeejfps.sr.utils.OBJImporter;
 import org.joml.*;
 
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.lang.Math;
 
@@ -13,18 +15,26 @@ public class SoftwareRenderer extends Application {
     private final Raster3D raster;
     private final Camera camera;
 
+    private EventBus eventBus = new EventBus();
+    private InputLayer inputLayer = new InputLayer();
+    private AwtEventDispatcher awtEventDispatcher;
+
     private Mesh car, cube;
 
     public SoftwareRenderer() {
         Config config = new Config();
-        config.windowWidth = 1024;
-        config.windowHeight = 576;
+        config.windowWidth = 640;
+        config.windowHeight = 480;
         config.fullscreen = false;
         config.renderScale = 1f;
 
-        raster = new Raster3D(1024, 576);
+        eventBus.register(inputLayer);
+
+        raster = new Raster3D(640, 480);
 
         display = new AwtDisplay(config, raster);
+
+        awtEventDispatcher = new AwtEventDispatcher(eventBus, display.getComponent());
 
         camera = new Camera(90f, (float)display.getWidth() / display.getHeight(), 0.01f, 1000f);
 
@@ -114,14 +124,15 @@ public class SoftwareRenderer extends Application {
        // renderTriangle(vertices[0], vertices[1], vertices[2]);
        // renderTriangle(vertices[0], vertices[2], vertices[1]);
 
-        carTransform.position.z = 10f;
-        carTransform.position.y = -5f;
+        //carTransform.position.z = -10f;
+        //carTransform.position.y = -5f;
         carTransform.rotation.y = rotation;
-        renderMesh(car, carTransform);
+        //camera.transform.position.z -= rotation;
+        //renderMesh(car, carTransform);
 
-        grid.render(camera, raster);
+        //grid.render(camera, raster);
 
-        //renderMesh(cube);
+        renderMesh(cube, carTransform);
 
         fps++;
         if (System.currentTimeMillis() - startTime >= 1000) {
@@ -135,7 +146,31 @@ public class SoftwareRenderer extends Application {
 
     @Override
     public void update(double dt) {
-        rotation += dt;
+        rotation += dt * 0.55;
+
+        if (inputLayer.isKeyDown(KeyEvent.VK_Q))
+            camera.forward.rotateY((float)dt * 5f);
+        else if (inputLayer.isKeyDown(KeyEvent.VK_E))
+            camera.forward.rotateY((float)dt * -5f);
+
+        if (inputLayer.isKeyDown(KeyEvent.VK_W))
+            camera.transform.position.add(camera.forward.mul((float)dt * 5f, new Vector3f()));
+        else if (inputLayer.isKeyDown(KeyEvent.VK_S))
+            camera.transform.position.sub(camera.forward.mul((float)dt * 5f, new Vector3f()));
+
+        if (inputLayer.isKeyDown(KeyEvent.VK_A))
+            camera.transform.position.x -= 5 * dt;
+        else if (inputLayer.isKeyDown(KeyEvent.VK_D))
+            camera.transform.position.x += 5 * dt;
+
+        if (inputLayer.isKeyDown(KeyEvent.VK_X)) {
+            camera.transform.position.y -= 5.0 * dt;
+        }
+        else if (inputLayer.isKeyDown(KeyEvent.VK_Z)) {
+            camera.transform.position.y += 5.0 * dt;
+        }
+
+        inputLayer.reset();
     }
 
     /* Testing Stuff */
@@ -160,26 +195,33 @@ public class SoftwareRenderer extends Application {
 
         for (int i = 0; i < mesh.getIndecies().length; i+=3) {
 
-            Vector3f v0 = mesh.getVertices()[indecies[i]];
-            Vector3f v1 = mesh.getVertices()[indecies[i+1]];
-            Vector3f v2 = mesh.getVertices()[indecies[i+2]];
+            Vector3f vtx0 = mesh.getVertices()[indecies[i]];
+            Vector3f vtx1 = mesh.getVertices()[indecies[i+1]];
+            Vector3f vtx2 = mesh.getVertices()[indecies[i+2]];
 
             Matrix4f transformMatrix = transform.getTransformationMatrix();
 
-            Vector3f p0 = v0.mulPosition(transformMatrix, new Vector3f());
-            Vector3f p1 = v1.mulPosition(transformMatrix, new Vector3f());
-            Vector3f p2 = v2.mulPosition(transformMatrix, new Vector3f());
+            // Local -> World
+            Vector4f p0 = new Vector4f(vtx0, 1f).mul(transformMatrix);
+            Vector4f p1 = new Vector4f(vtx1, 1f).mul(transformMatrix);
+            Vector4f p2 = new Vector4f(vtx2, 1f).mul(transformMatrix);
 
-            Vector3f line1 = p1.sub(p0, new Vector3f());
-            Vector3f line2 = p2.sub(p0, new Vector3f());
+            // World -> View
+            Matrix4f viewMatrix = camera.getViewMatrix();
+            Vector4f v0 = p0.mul(viewMatrix, new Vector4f());
+            Vector4f v1 = p1.mul(viewMatrix, new Vector4f());
+            Vector4f v2 = p2.mul(viewMatrix, new Vector4f());
+
+            Vector3f line1 = new Vector3f(v1.x, v1.y, v1.z).sub(new Vector3f(v0.x, v0.y, v0.z));
+            Vector3f line2 = new Vector3f(v2.x, v2.y, v2.z).sub(new Vector3f(v0.x, v0.y, v0.z));
             Vector3f normal = line1.cross(line2, new Vector3f()).normalize();
-            float v = normal.dot(new Vector3f(0, 0, 0).sub(p0));
-            if (v < 0) {
+            float v = normal.dot(new Vector3f(v0.x, v0.y, v0.z));
+            if (v > 0) {
                 continue;
             }
 
             float lum = normal.dot(light);
-            if (lum < 0) lum = 0f;
+            if (lum < 0) lum = -lum;
 
             int r = (int)Math.ceil(0xF0 * lum + 0.5);
             int g = (int)Math.ceil(0x01 * lum + 0.5);
@@ -187,16 +229,17 @@ public class SoftwareRenderer extends Application {
 
             int color = ((r&0xff)<<16)|((g&0xff)<<8)|(b&0xff);
 
-            Vector3f pr0 = p0.mulProject(camera.getViewProjMatrix(), new Vector3f());
-            Vector3f pr1 = p1.mulProject(camera.getViewProjMatrix(), new Vector3f());
-            Vector3f pr2 = p2.mulProject(camera.getViewProjMatrix(), new Vector3f());
+            Matrix4f projMatrix = camera.getProjMatrix();
+            Vector4f pr0 = v0.mulProject(projMatrix, new Vector4f());
+            Vector4f pr1 = v1.mulProject(projMatrix, new Vector4f());
+            Vector4f pr2 = v2.mulProject(projMatrix, new Vector4f());
 
             Vector2i vp0 = ndcToRasterCoord(pr0.x, pr0.y);
             Vector2i vp1 = ndcToRasterCoord(pr1.x, pr1.y);
             Vector2i vp2 = ndcToRasterCoord(pr2.x, pr2.y);
 
 //            raster.fillTri(vp0.x, vp0.y, vp1.x, vp1.y, vp2.x, vp2.y, color);
-            raster.fillTriFast(vp2.x, vp2.y, p2.z, color, vp1.x, vp1.y, p1.z, color, vp0.x, vp0.y, p0.z, color);
+            raster.fillTriFast(vp0.x, vp0.y, p0.z, color, vp1.x, vp1.y, p1.z, color, vp2.x, vp2.y, p2.z, color);
             //raster.drawTri(vp0.x, vp0.y, vp1.x, vp1.y, vp2.x, vp2.y, 0x233ff3);
         }
     }

@@ -38,8 +38,8 @@ public class Grid {
 
         for (Line line : lines) {
 
-            Vector3f sp = line.start.mulProject(camera.getViewProjMatrix(), new Vector3f());
-            Vector3f ep = line.end.mulProject(camera.getViewProjMatrix(), new Vector3f());
+            Vector3f sp = line.start.mulProject(camera.getProjMatrix(), new Vector3f());
+            Vector3f ep = line.end.mulProject(camera.getProjMatrix(), new Vector3f());
 
             Vector2i p0 = ndcToRasterCoord(raster, sp.x, sp.y);
             Vector2i p1 = ndcToRasterCoord(raster, ep.x, ep.y);
