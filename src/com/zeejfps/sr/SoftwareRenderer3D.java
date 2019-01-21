@@ -52,12 +52,55 @@ public class SoftwareRenderer3D {
                 triangle.toScreenSpace(raster);
 
                 raster.fillTriFast(
-                    (int)vtx0.x, (int)vtx0.y, vtx0.z,
-                    (int)vtx1.x, (int)vtx1.y, vtx1.z,
+                    (int)vtx0.x, (int)vtx0.y, vtx0.z, 0xff0000,
+                    (int)vtx1.x, (int)vtx1.y, vtx1.z, 0x00ff00,
                     (int)vtx2.x, (int)vtx2.y, vtx2.z, 0xff00ff
                 );
             }
         }
+
+    }
+
+    public void renderMeshIntStream(Matrix4d mvp, Mesh mesh) {
+
+        int[] indecies = mesh.getIndecies();
+        Vertex[] vertices = mesh.getVertices();
+
+        IntStream.iterate(0, i -> i + 3)
+                .parallel()
+                .limit(indecies.length/3)
+                .forEach((i) -> {
+
+                    Triangle triangleTriangle = new Triangle(
+                            vertices[indecies[i + 0]],
+                            vertices[indecies[i + 1]],
+                            vertices[indecies[i + 2]]
+                    );
+
+                    triangleTriangle.toClipSpace(mvp);
+
+                    List<Triangle> clippedFaced = clip(triangleTriangle);
+                    for (Triangle triangle : clippedFaced) {
+
+                        triangle.perspectiveDivide();
+
+                        if (canCull(triangle))
+                            continue;
+
+                        Vector4d vtx0 = triangle.v0.p;
+                        Vector4d vtx1 = triangle.v1.p;
+                        Vector4d vtx2 = triangle.v2.p;
+
+                        triangle.toScreenSpace(raster);
+
+                        raster.fillTriFast(
+                                (int)vtx0.x, (int)vtx0.y, vtx0.z, 0xff0000,
+                                (int)vtx1.x, (int)vtx1.y, vtx1.z, 0x00ff00,
+                                (int)vtx2.x, (int)vtx2.y, vtx2.z, 0x0000ff
+                        );
+                    }
+
+                });
 
     }
 
@@ -82,16 +125,17 @@ public class SoftwareRenderer3D {
 
         List<Vertex> vertices = new ArrayList<>();
         clipEdge(vtx0, vtx1, vertices);
-        clipEdge(vtx1, vtx2, vertices);
+        clipEdge(vtx2, vtx1, vertices);
         clipEdge(vtx2, vtx0, vertices);
 
-        if (vertices.size() < 3)
+        if (vertices.size() < 3) {
             return triangles;
+        }
 
         if (vertices.get(vertices.size()-1).equals(vertices.get(0)))
             vertices.remove(vertices.size() - 1);
 
-        for (int i = 0; i < vertices.size() - 1; i++) {
+        for (int i = 1; i < vertices.size() - 1; i++) {
             triangles.add(new Triangle(
                vertices.get(0),
                vertices.get(i),

@@ -14,7 +14,7 @@ public class DemoApplication extends Application {
 
     public static final int WINDOW_WIDTH = 768;
     public static final int WINDOW_HEIGHT = 432;
-    public static final float RENDER_SCALE = 0.5f;
+    public static final float RENDER_SCALE = 0.55f;
 
     private Raster3D raster;
     private EventBus eventBus;
@@ -36,8 +36,8 @@ public class DemoApplication extends Application {
         eventBus = new EventBus();
 
         raster = new Raster3D(
-                (int)(WINDOW_WIDTH / RENDER_SCALE),
-                (int)(WINDOW_HEIGHT / RENDER_SCALE)
+                (int)(WINDOW_WIDTH * RENDER_SCALE),
+                (int)(WINDOW_HEIGHT * RENDER_SCALE)
         );
 
         display = new AwtDisplay.Builder()
@@ -74,17 +74,17 @@ public class DemoApplication extends Application {
     @Override
     protected void onUpdate(double dt) {
         rotation += dt * 0.55;
-        bunnyTransform.position.y = -1.5f;
+        bunnyTransform.position.y = -2.8f;
         bunnyTransform.rotation.y = rotation;
 
-        pitch += (float)dt * 100 * inputLayer.getMouseDeltaY();
+        pitch += (float)dt * 55 * inputLayer.getMouseDeltaY();
 
         if(pitch > 80.0f)
             pitch = 80.0f;
         if(pitch < -80.0f)
             pitch = -80.0f;
 
-        yaw += (float)dt * 100 * inputLayer.getMouseDeltaX();
+        yaw += (float)dt * 55 * inputLayer.getMouseDeltaX();
 
         camera.forward.x = Math.cos(Math.toRadians(yaw)) * Math.cos(Math.toRadians(pitch));
         camera.forward.y = Math.sin(Math.toRadians(pitch));
@@ -129,11 +129,11 @@ public class DemoApplication extends Application {
         Matrix4d mvp = new Matrix4d(camera.getProjMatrix());
         mvp.mul(camera.getViewMatrix()).mul(bunnyTransform.getModelMatrix());
 
-        renderer.renderMesh(mvp, bunnyMesh);
+        renderer.renderMeshIntStream(mvp, bunnyMesh);
 
         mvp.identity().mul(camera.getProjMatrix()).mul(camera.getViewMatrix()).mul(planeTransform.getModelMatrix());
 
-        renderer.renderMesh(mvp, planeMesh);
+        renderer.renderMeshIntStream(mvp, cubeMesh);
 
         display.swapBuffers();
 

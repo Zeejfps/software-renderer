@@ -28,9 +28,9 @@ public class Raster3D extends Raster {
      * A lot of drawing code comes of this article https://fgiesen.wordpress.com/2013/02/06/the-barycentric-conspirac/
      */
     public void fillTriFast(
-            int x0, int y0, double z0,
-            int x1, int y1, double z1,
-            int x2, int y2, double z2, int color) {
+            int x0, int y0, double z0, int c0,
+            int x1, int y1, double z1, int c1,
+            int x2, int y2, double z2, int c2) {
 
         // area of the triangle multiplied by 2
         float area = edge(x0, y0, x1, y1, x2, y2);
@@ -124,10 +124,10 @@ public class Raster3D extends Raster {
 
                     if (z < depthBuffer[index]) {
                         depthBuffer[index] = z;
-                        /*int r = (int)(wr * ((c0 & 0xff0000) >> 16) + wg * ((c1 & 0xff0000) >> 16) + wb * ((c2 & 0xff0000) >> 16));
+                        int r = (int)(wr * ((c0 & 0xff0000) >> 16) + wg * ((c1 & 0xff0000) >> 16) + wb * ((c2 & 0xff0000) >> 16));
                         int g = (int)(wr * ((c0 & 0x00ff00) >>  8) + wg * ((c1 & 0x00ff00) >>  8) + wb * ((c2 & 0x00ff00) >>  8));
                         int b = (int)(wr * ((c0 & 0x0000ff)) + wg * ((c1 & 0x0000ff)) + wb * ((c2 & 0x0000ff)));
-                        int color = (r << 16) | (g << 8) | b;*/
+                        int color = (r << 16) | (g << 8) | b;
                         this.colorBuffer[index] = color;
                     }
                 }
