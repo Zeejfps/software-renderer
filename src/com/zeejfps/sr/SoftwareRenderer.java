@@ -19,7 +19,7 @@ public class SoftwareRenderer extends Application {
     private InputLayer inputLayer = new InputLayer();
     private AwtEventDispatcher awtEventDispatcher;
 
-    private Mesh car, cube;
+    private Mesh car, plane;
 
     public SoftwareRenderer() {
         Config config = new Config();
@@ -39,8 +39,8 @@ public class SoftwareRenderer extends Application {
         camera = new Camera(90f, (float)display.getWidth() / display.getHeight(), 0.01f, 1000f);
 
         try {
-            car = OBJImporter.load("res/Skotizo.obj");
-            cube = OBJImporter.load("res/cube.obj");
+            car = OBJImporter.load("res/bunny.obj");
+            plane = OBJImporter.load("res/plane.obj");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -126,13 +126,14 @@ public class SoftwareRenderer extends Application {
 
         //carTransform.position.z = -10f;
         //carTransform.position.y = -5f;
+        carTransform.position.y = -1.5f;
         carTransform.rotation.y = rotation;
         //camera.transform.position.z -= rotation;
-        //renderMesh(car, carTransform);
+        renderMesh(car, carTransform);
 
         //grid.render(camera, raster);
 
-        renderMesh(cube, carTransform);
+        renderMesh(plane, new Transform());
 
         fps++;
         if (System.currentTimeMillis() - startTime >= 1000) {
@@ -144,25 +145,55 @@ public class SoftwareRenderer extends Application {
         display.swapBuffers();
     }
 
+    float yaw, pitch;
     @Override
     public void update(double dt) {
         rotation += dt * 0.55;
 
-        if (inputLayer.isKeyDown(KeyEvent.VK_Q))
-            camera.forward.rotateY((float)dt * 5f);
-        else if (inputLayer.isKeyDown(KeyEvent.VK_E))
-            camera.forward.rotateY((float)dt * -5f);
+        //camera.forward.rotateAxis((float)dt * 5 * -inputLayer.getMouseDeltaX(), camera.up.x, camera.up.y, camera.up.z).normalize();
+
+        //Vector3f right = camera.forward.cross(camera.up, new Vector3f()).normalize();
+
+        //camera.forward.rotateAxis((float)dt * 5 * inputLayer.getMouseDeltaY(), right.x, right.y, right.z);
+
+        //Quaternionf rot = new Quaternionf();
+       // rot.rotateYXZ((float)dt * 5 * -inputLayer.getMouseDeltaX(), (float)dt * 5 * inputLayer.getMouseDeltaY(), 0f);
+
+        pitch += (float)dt * 200 * inputLayer.getMouseDeltaY();
+
+        if(pitch > 80.0f)
+            pitch = 80.0f;
+        if(pitch < -80.0f)
+            pitch = -80.0f;
+
+        yaw += (float)dt * 200 * inputLayer.getMouseDeltaX();
+
+        camera.forward.x = (float)(Math.cos(Math.toRadians(yaw)) * Math.cos(Math.toRadians(pitch)));
+        camera.forward.y = (float) Math.sin(Math.toRadians(pitch));
+        camera.forward.z = (float)(Math.sin(Math.toRadians(yaw)) * Math.cos(Math.toRadians(pitch)));
+        camera.forward.normalize();
 
         if (inputLayer.isKeyDown(KeyEvent.VK_W))
             camera.transform.position.add(camera.forward.mul((float)dt * 5f, new Vector3f()));
         else if (inputLayer.isKeyDown(KeyEvent.VK_S))
             camera.transform.position.sub(camera.forward.mul((float)dt * 5f, new Vector3f()));
 
-        if (inputLayer.isKeyDown(KeyEvent.VK_A))
-            camera.transform.position.x -= 5 * dt;
-        else if (inputLayer.isKeyDown(KeyEvent.VK_D))
-            camera.transform.position.x += 5 * dt;
+        if (inputLayer.isKeyDown(KeyEvent.VK_A)) {
 
+            Vector3f temp = new Vector3f();
+            camera.forward.cross(camera.up, temp).normalize();
+            temp.mul((float)dt * 5);
+
+            camera.transform.position.sub(temp);
+        }
+        else if (inputLayer.isKeyDown(KeyEvent.VK_D)) {
+
+            Vector3f temp = new Vector3f();
+            camera.forward.cross(camera.up, temp).normalize();
+            temp.mul((float) dt * 5);
+
+            camera.transform.position.add(temp);
+        }
         if (inputLayer.isKeyDown(KeyEvent.VK_X)) {
             camera.transform.position.y -= 5.0 * dt;
         }
@@ -239,7 +270,7 @@ public class SoftwareRenderer extends Application {
             Vector2i vp2 = ndcToRasterCoord(pr2.x, pr2.y);
 
 //            raster.fillTri(vp0.x, vp0.y, vp1.x, vp1.y, vp2.x, vp2.y, color);
-            raster.fillTriFast(vp0.x, vp0.y, p0.z, color, vp1.x, vp1.y, p1.z, color, vp2.x, vp2.y, p2.z, color);
+            raster.fillTriFast(vp0.x, vp0.y, pr0.z, color, vp1.x, vp1.y, pr1.z, color, vp2.x, vp2.y, pr2.z, color);
             //raster.drawTri(vp0.x, vp0.y, vp1.x, vp1.y, vp2.x, vp2.y, 0x233ff3);
         }
     }

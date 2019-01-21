@@ -16,11 +16,10 @@ public class Camera {
     private Quaternionf realRotation = new Quaternionf();
 
     public final Vector3f forward = new Vector3f(0f, 0f, -1f);
-    private Vector3f up = new Vector3f(0f, 1f, 0f);
-    public final Vector3f right = forward.cross(up, new Vector3f());
+    public final Vector3f up = new Vector3f(0f, 1f, 0f);
 
     public Camera(float fov, float aspect, float zNear, float zFar) {
-        transform.position.z = 10f;
+        transform.position.z = -10f;
         projMatrix = new Matrix4f()
                 .perspective((float) Math.toRadians(fov), aspect, zNear, zFar);
     }
