@@ -1,20 +1,18 @@
 package com.zeejfps.sr;
 
-import org.joml.Matrix4f;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
+import org.joml.*;
 
 public class Transform {
 
-    public final Vector3f position = new Vector3f();
-    public final Vector3f rotation = new Vector3f();
-    public final Vector3f scale = new Vector3f(1f, 1f, 1f);
+    public final Vector3d position = new Vector3d();
+    public final Vector3d rotation = new Vector3d();
+    public final Vector3d scale = new Vector3d(1, 1, 1);
 
-    private final Quaternionf realRotation = new Quaternionf();
+    private final Quaterniond realRotation = new Quaterniond();
 
-    private final Matrix4f transformationMatrix = new Matrix4f();
+    private final Matrix4d transformationMatrix = new Matrix4d();
 
-    public Matrix4f getTransformationMatrix() {
+    public Matrix4d getTransformationMatrix() {
         realRotation.identity()
                 .rotateXYZ(rotation.x, rotation.y, rotation.z);
         transformationMatrix.identity()

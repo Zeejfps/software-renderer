@@ -1,4 +1,4 @@
-package com.zeejfps.sr;
+package com.zeejfps.sr.awt;
 
 import com.google.common.eventbus.EventBus;
 import com.zeejfps.sr.events.KeyPressedEvent;
@@ -8,32 +8,37 @@ import com.zeejfps.sr.events.MouseMoveEvent;
 import java.awt.*;
 import java.awt.event.*;
 
-public class AwtEventDispatcher {
+class AwtEventDispatcher {
 
     private final EventBus eventBus;
-    private final InputHandler inputHandler;
     private final Component component;
+    private boolean containCursor;
 
     private Robot robot;
 
-    public AwtEventDispatcher(EventBus eventBus, Component component) {
+    public AwtEventDispatcher(EventBus eventBus, Component component, boolean containCursor) {
         this.eventBus = eventBus;
-        this.inputHandler = new InputHandler();
         this.component = component;
+        this.containCursor = containCursor;
+
+        InputHandler inputHandler = new InputHandler();
+
         component.addKeyListener(inputHandler);
         component.addMouseMotionListener(inputHandler);
         component.addMouseListener(inputHandler);
+
         try {
-            robot = new Robot();
+            robot = new Robot(AwtDisplay.DEFAULT_GRAPHICS_DEVICE);
         } catch (AWTException e) {
             e.printStackTrace();
             System.exit(1);
         }
     }
 
-    private int prevMouseX, prevMouseY;
-
     private class InputHandler implements KeyListener, MouseMotionListener, MouseListener {
+
+        private int prevMouseX, prevMouseY;
+        private boolean firstMouse = true;
 
         @Override
         public void keyTyped(KeyEvent e) {
@@ -54,8 +59,6 @@ public class AwtEventDispatcher {
         public void mouseDragged(MouseEvent e) {
 
         }
-
-        private boolean firstMouse = true;
 
         @Override
         public void mouseMoved(MouseEvent e) {
@@ -87,30 +90,32 @@ public class AwtEventDispatcher {
 
         @Override
         public void mouseEntered(MouseEvent e) {
-
         }
 
         @Override
         public void mouseExited(MouseEvent e) {
+            if (!containCursor)
+                return;
+
             if (e.getX() < 0) {
-                robot.mouseMove(component.getLocationOnScreen().x + component.getWidth(), component.getLocationOnScreen().y + e.getY());
-                prevMouseX = component.getWidth()-1;
+                robot.mouseMove(component.getLocationOnScreen().x + component.getWidth() - 4, component.getLocationOnScreen().y + e.getY());
+                prevMouseX = component.getWidth()-4;
                 prevMouseY = e.getY();
             }
             else if (e.getX() >= component.getWidth()) {
-                robot.mouseMove(component.getLocationOnScreen().x, component.getLocationOnScreen().y + e.getY());
+                robot.mouseMove(component.getLocationOnScreen().x + 1, component.getLocationOnScreen().y + e.getY());
                 prevMouseY = e.getY();
-                prevMouseX = 0;
+                prevMouseX = 1;
             }
 
             if (e.getY() < 0) {
-                robot.mouseMove(component.getLocationOnScreen().x + e.getX(), component.getLocationOnScreen().y + component.getHeight());
-                prevMouseX = component.getHeight()-1;
+                robot.mouseMove(component.getLocationOnScreen().x + e.getX(), component.getLocationOnScreen().y + component.getHeight()-4);
+                prevMouseX = component.getHeight()-4;
                 prevMouseY = e.getX();
             }
             else if (e.getY() >= component.getHeight()) {
-                robot.mouseMove(component.getLocationOnScreen().x + e.getX(), component.getLocationOnScreen().y);
-                prevMouseY = 0;
+                robot.mouseMove(component.getLocationOnScreen().x + e.getX(), component.getLocationOnScreen().y+1);
+                prevMouseY = 1;
                 prevMouseX = e.getX();
             }
 

@@ -6,16 +6,12 @@ import java.util.Arrays;
 
 public class Raster3D extends Raster {
 
-    protected float[] depthBuffer;
+    protected double[] depthBuffer;
 
     public Raster3D(int width, int height) {
         super(width, height);
-        depthBuffer = new float[this.width * this.height];
+        depthBuffer = new double[this.width * this.height];
         Arrays.fill(depthBuffer, Float.MAX_VALUE);
-    }
-
-    public float[] getDepthBuffer() {
-        return depthBuffer;
     }
 
     public void clearDepthBuffer() {
@@ -32,9 +28,9 @@ public class Raster3D extends Raster {
      * A lot of drawing code comes of this article https://fgiesen.wordpress.com/2013/02/06/the-barycentric-conspirac/
      */
     public void fillTriFast(
-            int x0, int y0, float z0, int c0,
-            int x1, int y1, float z1, int c1,
-            int x2, int y2, float z2, int c2) {
+            int x0, int y0, double z0, int c0,
+            int x1, int y1, double z1, int c1,
+            int x2, int y2, double z2, int c2) {
 
         // area of the triangle multiplied by 2
         float area = edge(x0, y0, x1, y1, x2, y2);
@@ -117,14 +113,14 @@ public class Raster3D extends Raster {
 
             for (int j = minX; j <= maxX; j++, index++) {
 
-                // If p is on or inside all edges, render pixel.
+                // If p is on or inside all edges, onRender pixel.
                 if ((w0 | w1 | w2) >= 0) {
 
-                    float wr = w0 / area;
-                    float wg = w1 / area;
-                    float wb = w2 / area;
+                    double wr = w0 / area;
+                    double wg = w1 / area;
+                    double wb = w2 / area;
 
-                    float z = z0 * wr + z1 * wg + z2 * wb;
+                    double z = z0 * wr + z1 * wg + z2 * wb;
 
                     if (z < depthBuffer[index]) {
                         depthBuffer[index] = z;

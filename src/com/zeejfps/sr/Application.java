@@ -27,7 +27,7 @@ public abstract class Application {
     private void loop() {
         previous = System.nanoTime();
 
-        init();
+        onCreate();
         while(running) {
             this.tick();
         }
@@ -41,20 +41,20 @@ public abstract class Application {
         lag += elapsed;
 
         while (lag >= NS_PER_UPDATE && skippedFrames < MAX_FRAMES_SKIP) {
-            fixedUpdate();
+            onFixedUpdate();
             lag -= NS_PER_UPDATE;
             skippedFrames++;
         }
         skippedFrames = 0;
-        update(elapsed / NS_PER_SECOND);
-        render();
+        onUpdate(elapsed / NS_PER_SECOND);
+        onRender();
     }
 
-    protected abstract void init();
+    protected abstract void onCreate();
 
-    protected abstract void fixedUpdate();
+    protected abstract void onFixedUpdate();
 
-    protected abstract void update(double dt);
+    protected abstract void onUpdate(double dt);
 
-    protected abstract void render();
+    protected abstract void onRender();
 }
