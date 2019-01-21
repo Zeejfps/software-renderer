@@ -12,9 +12,9 @@ import java.io.IOException;
 
 public class DemoApplication extends Application {
 
-    public static final int WINDOW_WIDTH = 640;
-    public static final int WINDOW_HEIGHT = 480;
-    public static final float RENDER_SCALE = 0.75f;
+    public static final int WINDOW_WIDTH = 768;
+    public static final int WINDOW_HEIGHT = 432;
+    public static final float RENDER_SCALE = 0.5f;
 
     private Raster3D raster;
     private EventBus eventBus;
@@ -23,7 +23,7 @@ public class DemoApplication extends Application {
 
     /* Testing Stuff */
     Mesh bunnyMesh, cubeMesh, planeMesh;
-    Transform bunnyTransform;
+    Transform bunnyTransform, planeTransform;
     double rotation;
     int fps = 0;
     double startTime = 0;
@@ -43,10 +43,12 @@ public class DemoApplication extends Application {
         display = new AwtDisplay.Builder()
                 .withWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT)
                 .containCursor()
+                .hideCursor()
+                //.setFullscreen()
                 .buildAndShow(eventBus, raster);
 
         camera = new Camera(75f, WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.01f, 100f);
-        renderer = new SoftwareRenderer3D(raster, camera);
+        renderer = new SoftwareRenderer3D(raster);
 
         inputLayer  = new InputLayer();
         eventBus.register(inputLayer);
@@ -61,6 +63,7 @@ public class DemoApplication extends Application {
         }
 
         bunnyTransform = new Transform();
+        planeTransform = new Transform();
     }
 
     @Override
@@ -74,14 +77,14 @@ public class DemoApplication extends Application {
         bunnyTransform.position.y = -1.5f;
         bunnyTransform.rotation.y = rotation;
 
-        pitch += (float)dt * 200 * inputLayer.getMouseDeltaY();
+        pitch += (float)dt * 100 * inputLayer.getMouseDeltaY();
 
         if(pitch > 80.0f)
             pitch = 80.0f;
         if(pitch < -80.0f)
             pitch = -80.0f;
 
-        yaw += (float)dt * 200 * inputLayer.getMouseDeltaX();
+        yaw += (float)dt * 100 * inputLayer.getMouseDeltaX();
 
         camera.forward.x = Math.cos(Math.toRadians(yaw)) * Math.cos(Math.toRadians(pitch));
         camera.forward.y = Math.sin(Math.toRadians(pitch));
@@ -124,10 +127,13 @@ public class DemoApplication extends Application {
         renderer.clear(0x002233);
 
         Matrix4d mvp = new Matrix4d(camera.getProjMatrix());
-        mvp.mul(camera.getViewMatrix()).mul(bunnyTransform.getTransformationMatrix());
+        mvp.mul(camera.getViewMatrix()).mul(bunnyTransform.getModelMatrix());
 
         renderer.renderMesh(mvp, bunnyMesh);
-        renderer.renderMeshOld(planeMesh, new Transform());
+
+        mvp.identity().mul(camera.getProjMatrix()).mul(camera.getViewMatrix()).mul(planeTransform.getModelMatrix());
+
+        renderer.renderMesh(mvp, planeMesh);
 
         display.swapBuffers();
 

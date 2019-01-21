@@ -110,7 +110,9 @@ public class AwtDisplay {
                         }
                         contentPane.setPreferredSize(new Dimension(windowWidth, windowHeight));
 
-                        AwtEventDispatcher eventDispatcher = new AwtEventDispatcher(eventBus, contentPane, containCursor);;
+                        AwtEventDispatcher eventDispatcher = new AwtEventDispatcher(eventBus, contentPane, containCursor);
+
+                        window.setContentPane(contentPane);
 
                         if (hideCursor){
                             BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
@@ -119,7 +121,6 @@ public class AwtDisplay {
                             window.getContentPane().setCursor(blankCursor);
                         }
 
-                        window.setContentPane(contentPane);
                         window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
                         window.setResizable(resizeable);
                         window.pack();

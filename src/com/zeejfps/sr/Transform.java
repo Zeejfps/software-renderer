@@ -12,7 +12,7 @@ public class Transform {
 
     private final Matrix4d transformationMatrix = new Matrix4d();
 
-    public Matrix4d getTransformationMatrix() {
+    public Matrix4d getModelMatrix() {
         realRotation.identity()
                 .rotateXYZ(rotation.x, rotation.y, rotation.z);
         transformationMatrix.identity()

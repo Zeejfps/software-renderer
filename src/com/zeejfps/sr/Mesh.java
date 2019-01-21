@@ -4,15 +4,15 @@ import org.joml.Vector3d;
 
 public class Mesh {
 
-    private final Vector3d[] vertices;
+    private final Vertex[] vertices;
     private final int[] indecies;
 
-    public Mesh(Vector3d[] vertices, int[] indecies) {
+    public Mesh(Vertex[] vertices, int[] indecies) {
         this.vertices = vertices;
         this.indecies = indecies;
     }
 
-    public Vector3d[] getVertices() {
+    public Vertex[] getVertices() {
         return vertices;
     }
 

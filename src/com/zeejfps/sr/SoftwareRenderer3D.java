@@ -7,15 +7,14 @@ import org.joml.*;
 import java.lang.Math;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 public class SoftwareRenderer3D {
 
     private final Raster3D raster;
-    private final Camera camera;
 
-    public SoftwareRenderer3D(Raster3D raster, Camera camera) {
+    public SoftwareRenderer3D(Raster3D raster) {
         this.raster = raster;
-        this.camera = camera;
     }
 
     public void clear(int color) {
@@ -26,39 +25,35 @@ public class SoftwareRenderer3D {
     public void renderMesh(Matrix4d mvp, Mesh mesh) {
 
         int[] indecies = mesh.getIndecies();
-        Vector3d[] vertices = mesh.getVertices();
+        Vertex[] vertices = mesh.getVertices();
 
-        for (int i = 0; i < indecies.length - 3; i+=3) {
+        for (int i = 0; i < indecies.length-2; i+=3) {
 
-            Face triangleFace = new Face(
-                new Vector4d(vertices[indecies[i + 0]], 1),
-                new Vector4d(vertices[indecies[i + 1]], 1),
-                new Vector4d(vertices[indecies[i + 2]], 1)
+            Triangle triangleTriangle = new Triangle(
+                vertices[indecies[i + 0]],
+                vertices[indecies[i + 1]],
+                vertices[indecies[i + 2]]
             );
 
-            triangleFace.toClipSpace(mvp);
+            triangleTriangle.toClipSpace(mvp);
 
-            List<Face> clippedFaced = clip(triangleFace);
-            for (Face face : clippedFaced) {
+            List<Triangle> clippedFaced = clip(triangleTriangle);
+            for (Triangle triangle : clippedFaced) {
 
-                /*Vector3d line1 = new Vector3d(v1.x, v1.y, v1.z).sub(new Vector3d(vtx0.x, vtx0.y, vtx0.z));
-                Vector3d line2 = new Vector3d(v2.x, v2.y, v2.z).sub(new Vector3d(vtx0.x, vtx0.y, vtx0.z));
-                Vector3d normal = line1.cross(line2, new Vector3d()).normalize();*/
+                triangle.perspectiveDivide();
 
-                face.perspectiveDivide();
-
-                if (canCull(face))
+                if (canCull(triangle))
                     continue;
 
-                face.toScreenSpace(raster);
+                Vector4d vtx0 = triangle.v0.p;
+                Vector4d vtx1 = triangle.v1.p;
+                Vector4d vtx2 = triangle.v2.p;
 
-                Vector4d vtx0 = face.vertices[0];
-                Vector4d vtx1 = face.vertices[1];
-                Vector4d vtx2 = face.vertices[2];
+                triangle.toScreenSpace(raster);
 
                 raster.fillTriFast(
-                    (int)vtx0.x, (int)vtx0.y, vtx0.z, 0xff00ff,
-                    (int)vtx1.x, (int)vtx1.y, vtx1.z, 0xff00ff,
+                    (int)vtx0.x, (int)vtx0.y, vtx0.z,
+                    (int)vtx1.x, (int)vtx1.y, vtx1.z,
                     (int)vtx2.x, (int)vtx2.y, vtx2.z, 0xff00ff
                 );
             }
@@ -66,144 +61,136 @@ public class SoftwareRenderer3D {
 
     }
 
-    public void renderMeshOld(Mesh mesh, Transform transform) {
+    private List<Triangle> clip(Triangle triangle) {
+        List<Triangle> triangles = new ArrayList<>();
 
-        int[] indecies = mesh.getIndecies();
+        Vertex vtx0 = triangle.v0;
+        Vertex vtx1 = triangle.v1;
+        Vertex vtx2 = triangle.v2;
 
-        Vector3d light = new Vector3d(0, 0, -1f).normalize();
+        if (vtx0.p.w <= 0 && vtx1.p.w <= 0 && vtx2.p.w <= 0)
+            return triangles;
 
-        for (int i = 0; i < mesh.getIndecies().length; i+=3) {
-
-            Vector3d vtx0 = mesh.getVertices()[indecies[i]];
-            Vector3d vtx1 = mesh.getVertices()[indecies[i+1]];
-            Vector3d vtx2 = mesh.getVertices()[indecies[i+2]];
-
-            Matrix4d transformMatrix = transform.getTransformationMatrix();
-
-            // Local -> World
-            Vector4d p0 = new Vector4d(vtx0, 1f).mul(transformMatrix);
-            Vector4d p1 = new Vector4d(vtx1, 1f).mul(transformMatrix);
-            Vector4d p2 = new Vector4d(vtx2, 1f).mul(transformMatrix);
-
-            // World -> View
-            Matrix4d viewMatrix = camera.getViewMatrix();
-            Vector4d v0 = p0.mul(viewMatrix, new Vector4d());
-            Vector4d v1 = p1.mul(viewMatrix, new Vector4d());
-            Vector4d v2 = p2.mul(viewMatrix, new Vector4d());
-
-            Vector3d line1 = new Vector3d(v1.x, v1.y, v1.z).sub(new Vector3d(v0.x, v0.y, v0.z));
-            Vector3d line2 = new Vector3d(v2.x, v2.y, v2.z).sub(new Vector3d(v0.x, v0.y, v0.z));
-            Vector3d normal = line1.cross(line2, new Vector3d()).normalize();
-            double v = normal.dot(new Vector3d(v0.x, v0.y, v0.z));
-            if (v > 0) {
-                continue;
-            }
-
-            double lum = normal.dot(light);
-            if (lum < 0) lum = -lum;
-
-            int r = (int)Math.ceil(0xF0 * lum + 0.5);
-            int g = (int)Math.ceil(0x01 * lum + 0.5);
-            int b = (int)Math.ceil(0x25 * lum + 0.5);
-
-            int color = ((r&0xff)<<16)|((g&0xff)<<8)|(b&0xff);
-
-            Matrix4d projMatrix = camera.getProjMatrix();
-            Vector4d pr0 = v0.mulProject(projMatrix, new Vector4d());
-            Vector4d pr1 = v1.mulProject(projMatrix, new Vector4d());
-            Vector4d pr2 = v2.mulProject(projMatrix, new Vector4d());
-
-            Vector2i vp0 = ndcToRasterCoord(pr0.x, pr0.y);
-            Vector2i vp1 = ndcToRasterCoord(pr1.x, pr1.y);
-            Vector2i vp2 = ndcToRasterCoord(pr2.x, pr2.y);
-
-//            raster.fillTri(vp0.x, vp0.y, vp1.x, vp1.y, vp2.x, vp2.y, color);
-            raster.fillTriFast(vp0.x, vp0.y, pr0.z, color, vp1.x, vp1.y, pr1.z, color, vp2.x, vp2.y, pr2.z, color);
-            //raster.drawTri(vp0.x, vp0.y, vp1.x, vp1.y, vp2.x, vp2.y, 0x233ff3);
-        }
-    }
-
-    private Vector2i ndcToRasterCoord(double x, double y) {
-        Vector2i result = new Vector2i();
-
-        double halfWidth = raster.getWidth() * 0.5f;
-        double halfHeight = raster.getHeight() * 0.5f;
-
-        result.x = (int)(halfWidth * (x + 1f) + 0.5f);
-        result.y = (int)(halfHeight * (y + 1f) + 0.5f);
-        return result;
-    }
-
-    private List<Face> clip(Face face) {
-        List<Face> faces = new ArrayList<>();
-
-        Vector4d vtx0 = face.vertices[0];
-        Vector4d vtx1 = face.vertices[1];
-        Vector4d vtx2 = face.vertices[2];
-
-        if (vtx0.w <= 0 && vtx1.w <= 0 && vtx2.w <= 0)
-            return faces;
-
-        if (vtx0.w > 0 && vtx1.w > 0 && vtx2.w > 0 &&
-                Math.abs(vtx0.z) < vtx0.w &&
-                Math.abs(vtx1.z) < vtx1.w &&
-                Math.abs(vtx2.z) < vtx2.w
+        if (vtx0.p.w > 0 && vtx1.p.w > 0 && vtx2.p.w > 0 &&
+                Math.abs(vtx0.p.z) < vtx0.p.w &&
+                Math.abs(vtx1.p.z) < vtx1.p.w &&
+                Math.abs(vtx2.p.z) < vtx2.p.w
         ){
-            faces.add(face);
-            return faces;
+            triangles.add(triangle);
+            return triangles;
         }
 
-        List<Vector4d> vertices = new ArrayList<>();
+        List<Vertex> vertices = new ArrayList<>();
         clipEdge(vtx0, vtx1, vertices);
         clipEdge(vtx1, vtx2, vertices);
         clipEdge(vtx2, vtx0, vertices);
 
         if (vertices.size() < 3)
-            return faces;
+            return triangles;
+
+        if (vertices.get(vertices.size()-1).equals(vertices.get(0)))
+            vertices.remove(vertices.size() - 1);
 
         for (int i = 0; i < vertices.size() - 1; i++) {
-            faces.add(new Face(
+            triangles.add(new Triangle(
                vertices.get(0),
                vertices.get(i),
                vertices.get(i + 1)
             ));
         }
 
-        return faces;
+        return triangles;
     }
 
-    private void clipEdge(Vector4d v0, Vector4d v1, List<Vector4d> verticeis) {
+    private void clipEdge(Vertex v0, Vertex v1, List<Vertex> verticies) {
 
+        Vertex v0New = v0;
+        Vertex v1New = v1;
+
+        boolean v0Inside = v0.p.w > 0 && v0.p.z > -v0.p.w;
+        boolean v1Inside = v1.p.w > 0 && v1.p.z > -v1.p.w;
+
+        if (v0Inside && v1Inside) {
+            // Inside near plane
+        }
+        else if (v0Inside || v1Inside) {
+
+            double d0 = v0.p.z + v0.p.w;
+            double d1 = v1.p.z + v1.p.w;
+
+            double factor = 1.0 / (d1 - d0);
+
+            Vertex v = v0.lerp(v1, factor, d0, d1);
+
+            if (v0Inside)
+                v1New = v;
+            else
+                v0New = v;
+
+        }
+        else {
+            return;
+        }
+
+        if (verticies.size() == 0 || !verticies.get(verticies.size()-1).equals(v0New)) {
+            verticies.add(v0New);
+        }
+
+        verticies.add(v1New);
     }
 
-    private boolean canCull(Face face) {
-        return false;
+    private boolean canCull(Triangle triangle) {
+        double d = (triangle.v1.p.x - triangle.v0.p.x) *
+                   (triangle.v2.p.y - triangle.v0.p.y) -
+                   (triangle.v1.p.y - triangle.v0.p.y) *
+                   (triangle.v2.p.x - triangle.v0.p.x);
+        return d < 0.0;
     }
 
-    private static class Face {
-        public final Vector4d[] vertices;
-        public Face(Vector4d... vertices) {
-            this.vertices = vertices;
+    private static class Triangle {
+
+        public final Vertex v0;
+        public final Vertex v1;
+        public final Vertex v2;
+
+        public Triangle(Vertex v0, Vertex v1, Vertex v2) {
+            this.v0 = Vertex.copyOf(v0);
+            this.v1 = Vertex.copyOf(v1);
+            this.v2 = Vertex.copyOf(v2);
         }
 
         public void toClipSpace(Matrix4d mvp) {
-            for (Vector4d v : vertices)
-                v.mul(mvp);
+            v0.p.mul(mvp);
+            v1.p.mul(mvp);
+            v2.p.mul(mvp);
         }
 
         public void perspectiveDivide() {
-            for (Vector4d v : vertices) {
-                v.x /= v.w;
-                v.y /= v.w;
-                v.z /= v.w;
-            }
+            v0.p.x /= v0.p.w;
+            v0.p.y /= v0.p.w;
+            v0.p.z /= v0.p.w;
+
+            v1.p.x /= v1.p.w;
+            v1.p.y /= v1.p.w;
+            v1.p.z /= v1.p.w;
+
+            v2.p.x /= v2.p.w;
+            v2.p.y /= v2.p.w;
+            v2.p.z /= v2.p.w;
         }
 
         public void toScreenSpace(Raster raster) {
-            for (Vector4d v : vertices) {
-                v.x = Math.floor(0.5 * raster.getWidth() * (v.x + 1));
-                v.y = Math.floor(0.5 * raster.getHeight() * (v.y + 1));
-            }
+            double halfWidth = raster.getWidth() * 0.5;
+            double halfHeight = raster.getHeight() * 0.5;
+
+            v0.p.x = Math.floor(halfWidth * (v0.p.x + 1));
+            v0.p.y = Math.floor(halfHeight * (v0.p.y + 1));
+
+            v1.p.x = Math.floor(halfWidth * (v1.p.x + 1));
+            v1.p.y = Math.floor(halfHeight * (v1.p.y + 1));
+
+            v2.p.x = Math.floor(halfWidth * (v2.p.x + 1));
+            v2.p.y = Math.floor(halfHeight * (v2.p.y + 1));
         }
     }
 

@@ -1,6 +1,7 @@
 package com.zeejfps.sr.utils;
 
 import com.zeejfps.sr.Mesh;
+import com.zeejfps.sr.Vertex;
 import org.joml.Vector3d;
 
 import java.io.BufferedReader;
@@ -12,7 +13,7 @@ public class OBJImporter {
 
     public static Mesh load(String path) throws IOException {
 
-        ArrayList<Vector3d> verts = new ArrayList<>();
+        ArrayList<Vertex> verts = new ArrayList<>();
         ArrayList<Integer> indecies = new ArrayList<>();
 
         BufferedReader br = new BufferedReader(new FileReader(path));
@@ -26,7 +27,7 @@ public class OBJImporter {
                 float y = Float.parseFloat(tokens[2]);
                 float z = Float.parseFloat(tokens[3]);
 
-                verts.add(new Vector3d(x, y, z));
+                verts.add(new Vertex(new Vector3d(x, y, z)));
 
             }
             else if (tokens[0].equals("f")){
@@ -53,7 +54,7 @@ public class OBJImporter {
 
         }
 
-        Mesh m = new Mesh(verts.toArray(new Vector3d[verts.size()]), indeci);
+        Mesh m = new Mesh(verts.toArray(new Vertex[verts.size()]), indeci);
         return m;
 
     }
