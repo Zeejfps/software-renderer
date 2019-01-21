@@ -18,10 +18,10 @@ public class Camera {
     public final Vector3d forward = new Vector3d(0f, 0f, -1f);
     public final Vector3d up = new Vector3d(0f, 1f, 0f);
 
-    public Camera(float fov, float aspect, float zNear, float zFar) {
+    public Camera(double fov, double aspect, double zNear, double zFar) {
         transform.position.z = -10f;
         projMatrix = new Matrix4d()
-                .perspective((float) Math.toRadians(fov), aspect, zNear, zFar);
+                .perspective(Math.toRadians(fov), aspect, zNear, zFar);
     }
 
     public Matrix4d getViewMatrix() {

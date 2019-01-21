@@ -12,8 +12,8 @@ import java.io.IOException;
 
 public class DemoApplication extends Application {
 
-    public static final int WINDOW_WIDTH = 768;
-    public static final int WINDOW_HEIGHT = 432;
+    public static final int WINDOW_WIDTH = 720;
+    public static final int WINDOW_HEIGHT = 500;
     public static final float RENDER_SCALE = 0.55f;
 
     private Raster3D raster;
@@ -23,7 +23,7 @@ public class DemoApplication extends Application {
 
     /* Testing Stuff */
     Mesh bunnyMesh, cubeMesh, planeMesh;
-    Transform bunnyTransform, planeTransform;
+    Transform bunnyTransform, cubeTransform, planeTransform;
     double rotation;
     int fps = 0;
     double startTime = 0;
@@ -47,7 +47,7 @@ public class DemoApplication extends Application {
                 //.setFullscreen()
                 .buildAndShow(eventBus, raster);
 
-        camera = new Camera(75f, WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.01f, 100f);
+        camera = new Camera(65, WINDOW_WIDTH / (double)WINDOW_HEIGHT, 0.1, 100);
         renderer = new SoftwareRenderer3D(raster);
 
         inputLayer  = new InputLayer();
@@ -63,7 +63,14 @@ public class DemoApplication extends Application {
         }
 
         bunnyTransform = new Transform();
+        bunnyTransform.position.y = -4;
         planeTransform = new Transform();
+        cubeTransform = new Transform();
+        cubeTransform.position.y = -1;
+
+        camera.transform.position.x = 10;
+        camera.transform.position.z = -20;
+        camera.transform.position.y = -5;
     }
 
     @Override
@@ -74,15 +81,14 @@ public class DemoApplication extends Application {
     @Override
     protected void onUpdate(double dt) {
         rotation += dt * 0.55;
-        bunnyTransform.position.y = -2.8f;
         bunnyTransform.rotation.y = rotation;
 
         pitch += (float)dt * 55 * inputLayer.getMouseDeltaY();
 
-        if(pitch > 80.0f)
-            pitch = 80.0f;
-        if(pitch < -80.0f)
-            pitch = -80.0f;
+//        if(pitch > 80.0f)
+//            pitch = 80.0f;
+//        if(pitch < -80.0f)
+//            pitch = -80.0f;
 
         yaw += (float)dt * 55 * inputLayer.getMouseDeltaX();
 
@@ -126,14 +132,18 @@ public class DemoApplication extends Application {
     protected void onRender() {
         renderer.clear(0x002233);
 
-        Matrix4d mvp = new Matrix4d(camera.getProjMatrix());
-        mvp.mul(camera.getViewMatrix()).mul(bunnyTransform.getModelMatrix());
+        Matrix4d vp = new Matrix4d(camera.getProjMatrix()).mul(camera.getViewMatrix());
 
+        Matrix4d mvp = new Matrix4d();
+
+        mvp.identity().mul(vp).mul(bunnyTransform.getModelMatrix());
         renderer.renderMeshIntStream(mvp, bunnyMesh);
 
-        mvp.identity().mul(camera.getProjMatrix()).mul(camera.getViewMatrix()).mul(planeTransform.getModelMatrix());
-
+        mvp.identity().mul(vp).mul(cubeTransform.getModelMatrix());
         renderer.renderMeshIntStream(mvp, cubeMesh);
+
+        mvp.identity().mul(vp).mul(planeTransform.getModelMatrix());
+        renderer.renderMeshIntStream(mvp, planeMesh);
 
         display.swapBuffers();
 

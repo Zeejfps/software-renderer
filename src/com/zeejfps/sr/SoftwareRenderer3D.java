@@ -125,7 +125,7 @@ public class SoftwareRenderer3D {
 
         List<Vertex> vertices = new ArrayList<>();
         clipEdge(vtx0, vtx1, vertices);
-        clipEdge(vtx2, vtx1, vertices);
+        clipEdge(vtx1, vtx2, vertices);
         clipEdge(vtx2, vtx0, vertices);
 
         if (vertices.size() < 3) {
