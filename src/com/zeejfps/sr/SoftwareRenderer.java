@@ -56,6 +56,10 @@ public class SoftwareRenderer extends Application {
             new Vertex(-0.8f, 0.5f, 0f, 0x0000ff),
     };
 
+    Transform carTransform = new Transform();
+
+    Grid grid = new Grid();
+
     @Override
     public void render() {
 
@@ -110,7 +114,12 @@ public class SoftwareRenderer extends Application {
        // renderTriangle(vertices[0], vertices[1], vertices[2]);
        // renderTriangle(vertices[0], vertices[2], vertices[1]);
 
-        renderMesh(car);
+        carTransform.position.z = 10f;
+        carTransform.position.y = -5f;
+        carTransform.rotation.y = rotation;
+        renderMesh(car, carTransform);
+
+        grid.render(camera, raster);
 
         //renderMesh(cube);
 
@@ -131,22 +140,6 @@ public class SoftwareRenderer extends Application {
 
     /* Testing Stuff */
     float rotation = 0f;
-    Quaternionf rotationQ = new Quaternionf();
-
-    private void renderTriangle(Vertex v0, Vertex v1, Vertex v2) {
-
-        Vector3f normal = new Vector3f().cross(new Vector3f(v0.position), v1.position);
-
-        Vector4f p0 = new Vector4f(v0.position, 1f).mul(new Matrix4f().rotateY(rotation)).mulProject(camera.getViewProjMatrix());
-        Vector4f p1 = new Vector4f(v1.position, 1f).mul(new Matrix4f().rotateY(rotation)).mulProject(camera.getViewProjMatrix());
-        Vector4f p2 = new Vector4f(v2.position, 1f).mul(new Matrix4f().rotateY(rotation)).mulProject(camera.getViewProjMatrix());
-
-        Vector2i vp0 = ndcToRasterCoord(p0.x, p0.y);
-        Vector2i vp1 = ndcToRasterCoord(p1.x, p1.y);
-        Vector2i vp2 = ndcToRasterCoord(p2.x, p2.y);
-
-        raster.fillTri(vp0.x, vp0.y, vp1.x, vp1.y, vp2.x, vp2.y, 0xff00ff);
-    }
 
     private Vector2i ndcToRasterCoord(float x, float y) {
         Vector2i result = new Vector2i();
@@ -159,25 +152,9 @@ public class SoftwareRenderer extends Application {
         return result;
     }
 
-    private void renderMesh(Mesh mesh) {
-        Matrix4f transform = new Matrix4f();
+    private void renderMesh(Mesh mesh, Transform transform) {
 
-        //Quaternion xRot = new Quaternion(Vector3.RIGHT,  mesh.rotation.x);
-        //Quaternion yRot = new Quaternion(Vector3.UP,  mesh.rotation.y);
-        //Quaternion zRot = new Quaternion(Vector3.FORWARD,  mesh.rotation.z);
-
-        //Quaternionf rotation = new Quaternionf((mesh.rotation.y, mesh.rotation.z, mesh.rotation.x);//yRot.mult(xRot).mult(zRot);
-
-        //Matrix4 worldMatrix = transform.mult(rotation);
         int[] indecies = mesh.getIndecies();
-
-        /*Vector3f[] verts = new Vector3f[mesh.getVertices().length];
-        for (int i = 0; i < verts.length; i++) {
-
-            Vector3f v = rotation.mult(mesh.getVertices()[i]);
-            verts[i] = screen.getMatrix().mult(camera.mult(transform)).mult(v);
-
-        }*/
 
         Vector3f light = new Vector3f(0, 0, -1f).normalize();
 
@@ -187,18 +164,16 @@ public class SoftwareRenderer extends Application {
             Vector3f v1 = mesh.getVertices()[indecies[i+1]];
             Vector3f v2 = mesh.getVertices()[indecies[i+2]];
 
-            Matrix3f rot = new Matrix3f().rotationXYZ(25, rotation, 0);
-            Vector3f p0 = v0.mul(rot, new Vector3f()).add(0, -5.12f, 10.16f);
-            Vector3f p1 = v1.mul(rot, new Vector3f()).add(0, -5.12f, 10.16f);
-            Vector3f p2 = v2.mul(rot, new Vector3f()).add(0, -5.12f, 10.16f);
+            Matrix4f transformMatrix = transform.getTransformationMatrix();
+
+            Vector3f p0 = v0.mulPosition(transformMatrix, new Vector3f());
+            Vector3f p1 = v1.mulPosition(transformMatrix, new Vector3f());
+            Vector3f p2 = v2.mulPosition(transformMatrix, new Vector3f());
 
             Vector3f line1 = p1.sub(p0, new Vector3f());
             Vector3f line2 = p2.sub(p0, new Vector3f());
             Vector3f normal = line1.cross(line2, new Vector3f()).normalize();
             float v = normal.dot(new Vector3f(0, 0, 0).sub(p0));
-
-            //v = new Vector3f(0, 0, -1f).dot(normal) - v;*/
-
             if (v < 0) {
                 continue;
             }
